@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="SQL Scripts\**" />
+    <EmbeddedResource Remove="SQL Scripts\**" />
+    <None Remove="SQL Scripts\**" />
+    <Page Remove="SQL Scripts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Images\Logo_Excel.jpg" />
+    <None Remove="Images\Logo_Excel.png" />
+    <None Remove="Images\MainBackground.jpg" />
+    <None Remove="Images\Mainbackground2.jpg" />
+    <None Remove="Images\Word_Logo.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="DocX" Version="3.0.0" />
+    <PackageReference Include="FullControls" Version="2.2.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.59" />
+    <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\Logo_Excel.png" />
+    <Resource Include="Images\MainBackground.jpg" />
+    <Resource Include="Images\Word_Logo.jpg" />
+  </ItemGroup>
+
+</Project>
