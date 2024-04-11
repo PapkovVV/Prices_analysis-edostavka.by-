@@ -167,7 +167,6 @@ public class Parsing
                 await AddLogMessageAsync("ParseProductAsync", $"Попытка загрузить стрaницу: {href}");
                 var doc = await htmlWeb.LoadFromWebAsync(href).ConfigureAwait(false);
                 await AddLogMessageAsync("ParseProductAsync", $"Страница {href} загружена успешно!");
-
                 string productName = await GetProductName(doc);
 
                 decimal productPrice = await GetProductPrice(doc, productName);
@@ -375,10 +374,6 @@ public class Parsing
             string? optPrice = doc.DocumentNode.SelectSingleNode("//span[@class='price_main__nYHyt']") == null ?
                                null : doc.DocumentNode.SelectSingleNode("//span[@class='price_main__nYHyt']").InnerText;
 
-            decimal grammovka = productName.Split(' ')[^2].Replace('.', ',').Contains("х") ?
-                                   decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[0]) *
-                                   decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[1]) :
-                                   decimal.Parse(productName.Split(' ')[^2].Replace('.', ','));
 
             if (!string.IsNullOrEmpty(optPrice))
             {
@@ -392,6 +387,11 @@ public class Parsing
                         return optProductPrice;
                     }
                 }
+
+                decimal grammovka = productName.Split(' ')[^2].Replace('.', ',').Contains("х") ?
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[0]) *
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[1]) :
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ','));
 
                 if (productName.Split(' ')[^1].Replace('.', ',').Equals("г"))
                 {
@@ -426,7 +426,11 @@ public class Parsing
                         }
                     }
 
-                    
+                    decimal grammovka = productName.Split(' ')[^2].Replace('.', ',').Contains("х") ?
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[0]) *
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ',').Split("х")[1]) :
+                       decimal.Parse(productName.Split(' ')[^2].Replace('.', ','));
+
 
                     if (productName.Split(' ')[^1].Replace('.', ',').Equals("г"))
                     {
