@@ -38,17 +38,6 @@ public class Parsing
             mainViewModelInstance = mainVMI;
             HtmlDocument doc = new HtmlDocument();
 
-            /*await ParseWheatFlour();
-            await ParseSugar();
-            await ParseSourCream();
-            await ParseKvas();
-            await ParseUksus();
-            await ParseHalva();
-            await ParseApples();
-            await ParseTomatoSouse();
-            await ParseKrupaGrechnevaya();
-            await ParseHoney();*/
-
             await Task.WhenAll(ParseWheatFlour(), ParseSugar(), ParseSourCream(), ParseKvas(),
                 ParseUksus(), ParseHalva(), ParseApples(), ParseTomatoSouse(), ParseKrupaGrechnevaya(), ParseHoney());
         }
