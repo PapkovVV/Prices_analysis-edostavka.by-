@@ -15,9 +15,9 @@ public class Parsing
 
     #region Списки
 
-    public static List<Category> categories = new List<Category>();
-    public static List<ProductAttribute> productAttributes = new List<ProductAttribute>();
-    public static List<AttributeValues> attributeValues = new List<AttributeValues>();
+    public static List<Category> categories = new List<Category>();//Список спаршенных категорий
+    public static List<ProductAttribute> productAttributes = new List<ProductAttribute>();//Список спаршенных названий характеристик
+    public static List<AttributeValues> attributeValues = new List<AttributeValues>();//Список спаршенных значений хаарктеристик
 
     #endregion Списки
 
@@ -105,7 +105,7 @@ public class Parsing
 
 
     #region Общий парсинг
-    static async Task ParseCategoryAsync(string categoryUrl)//Парсинг категории 
+    static async Task ParseCategoryAsync(string categoryUrl)//Парсинг категории(Оптимизировано)
     {
         int currentAttempt = 0;
 
@@ -154,7 +154,7 @@ public class Parsing
         }
     }
 
-    static async Task ParseProductAsync(string href, Category category)
+    static async Task ParseProductAsync(string href, Category category)//Парсинг продукта(Оптимизировано)
     {
         int currentAttempt = 0;
 
@@ -167,9 +167,10 @@ public class Parsing
                 await AddLogMessageAsync("ParseProductAsync", $"Попытка загрузить стрaницу: {href}");
                 var doc = await htmlWeb.LoadFromWebAsync(href).ConfigureAwait(false);
                 await AddLogMessageAsync("ParseProductAsync", $"Страница {href} загружена успешно!");
-                string productName = await GetProductName(doc);
 
-                decimal productPrice = await GetProductPrice(doc, productName);
+                string productName = await GetProductName(doc);//Получаем название продукта
+
+                decimal productPrice = await GetProductPrice(doc, productName);//Получаем цену продукта
 
                 var newProduct = new ProductName { CategoryId = category.Id, Name = productName, Article = await GetArticleFromUrl(href) };
                 newProduct.ProductPrice = new ProductPrice { ProductId = newProduct.Article, Price = productPrice };
