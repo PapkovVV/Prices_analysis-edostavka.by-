@@ -109,7 +109,7 @@ public class Parsing
     {
         int currentAttempt = 0;
 
-        while (true)
+        while (currentAttempt < 10)
         {
             try
             {
@@ -158,7 +158,7 @@ public class Parsing
     {
         int currentAttempt = 0;
 
-        while (true)
+        while (currentAttempt < 10)
         {
             try
             {

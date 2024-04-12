@@ -3,13 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using FullControls.Controls;
 using FullControls.SystemComponents;
 using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
 using KursovayaDB.Services.DataBaseServices;
 using KursovayaDB.Services.LogServices;
 using KursovayaDB.Services.ParsingServices;
 using KursovayaDB.Services.SecurityServices;
 using KursovayaDB.Views;
-using System.Collections.Generic;
 using System.Windows;
 namespace KursovayaDB.ViewModel;
 
@@ -128,13 +126,13 @@ public partial class MainViewModel : ObservableObject
 
         }
 
-       /* FullWindow welcomeWindow = new WelcomeWindow
-        {
-            Title = $"Добро пожаловать, {login}"
-        };
-        Application.Current.MainWindow.Close();
-        welcomeWindow.Show();
-        welcomeWindow.Height +=1;*/
+        /* FullWindow welcomeWindow = new WelcomeWindow
+         {
+             Title = $"Добро пожаловать, {login}"
+         };
+         Application.Current.MainWindow.Close();
+         welcomeWindow.Show();
+         welcomeWindow.Height +=1;*/
 
     }
 
