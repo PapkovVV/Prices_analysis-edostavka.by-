@@ -3,7 +3,6 @@ using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace KursovayaDB.Views.Pages;
 public partial class ProductsPage : Page
@@ -64,7 +63,7 @@ public partial class ProductsPage : Page
                 var productItem = new SimpleAccordionItem
                 {
                     Header = product.Name,
-                    HeaderBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ebebf5")),
+                    HeaderBackground = System.Windows.Media.Brushes.LightSkyBlue,
                     HeaderBackgroundOnMouseOver = System.Windows.Media.Brushes.White,
                     HeaderBackgroundOnExpanded = System.Windows.Media.Brushes.White,
                     HeaderBackgroundOnMouseOverOnExpanded = System.Windows.Media.Brushes.White,
@@ -113,7 +112,7 @@ public partial class ProductsPage : Page
         {
             foreach (AccordionItem item in accordion.Items)
             {
-                if (!item.Header.ToString().ToLower().StartsWith(categoriesCombo.Text.ToLower()))
+                if (!item.Header.ToString().ToLower().Contains(categoriesCombo.Text.ToLower()))
                 {
                     item.Visibility = Visibility.Collapsed;
                 }
