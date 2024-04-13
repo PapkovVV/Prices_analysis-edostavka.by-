@@ -16,7 +16,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] string loginResgistrationTittle = "Вход";
     [ObservableProperty] string loginResgistrationButtonText = "Войти";
     [ObservableProperty] string hyperlinkText = "Нет аккаунта? Создайте";
-    [ObservableProperty] string logText;
+    [ObservableProperty] static string logText;
 
     [ObservableProperty] string login;//Логин пользователя
     PasswordBoxPlus passwordBox;
@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty] bool isAuthButtonEnable;//Возможность нажатия кнопки авторизации
     [ObservableProperty] bool isProgressBarVisible;//Видимость ProgressBar
+
     public MainViewModel(PasswordBoxPlus passwordBox)
     {
         InitializeAsync();

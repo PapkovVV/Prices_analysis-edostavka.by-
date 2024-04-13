@@ -1,8 +1,8 @@
 ﻿using KursovayaDB.Models;
+using KursovayaDB.Services.LogServices;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
-using System.Windows;
 
 namespace KursovayaDB.DataBaseServices;
 
@@ -11,6 +11,7 @@ public static class SQLScripts
     static string connectionString = @$"Server=DESKTOP-SJLIHQ6;Trusted_Connection=True;Encrypt=False;";
     static string sqlScript = "";
 
+    #region Создание
     public static async Task CreateDatabaseAsync()//Создание Базы данных(OP)
     {
         sqlScript = File.ReadAllText(@"SQL Scripts\CreateDB.sql");
@@ -18,14 +19,12 @@ public static class SQLScripts
         await ExecuteSQLScriptNonQueryAsync();
         await CreateTablesAsync();
     }
-
     static async Task CreateTablesAsync()//Создание таблиц БД(OP)
     {
         sqlScript = File.ReadAllText(@"SQL Scripts\CreateTables.sql");
         await ExecuteSQLScriptNonQueryAsync();
         await CreateStoredProcedures();
     }
-
     static async Task CreateStoredProcedures()//Создание хранимых процедур(OP)
     {
         string[] storedProcedures = new string[]
@@ -59,81 +58,39 @@ public static class SQLScripts
             await ExecuteSQLScriptNonQueryAsync();
         }
     }
+    #endregion Создание
+
+    #region Добавление данных
     public static async Task<int> AddUserAsync(string login, string password)//Регистрация пользователя(OP)
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
-        {
-            using (SqlCommand command = new SqlCommand("AddUserProcedure", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.Parameters.AddWithValue("@Login", login);
-                command.Parameters.AddWithValue("@Password", password);
-
-                SqlParameter resultParameter = new SqlParameter("@Result", SqlDbType.Int);
-                resultParameter.Direction = ParameterDirection.Output;
-                command.Parameters.Add(resultParameter);
-                await connection.OpenAsync();
-                await command.ExecuteNonQueryAsync();
-                await connection.CloseAsync();
-
-                return (int)resultParameter.Value;
-            }
-        }
-    }
-
-    public static async Task<int> CheckUserAsync(string login)//Проверка существования пользователя в БД(OP)
-    {
-        using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
-        {
-            using (SqlCommand command = new SqlCommand("CheckUserProcedure", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.Parameters.AddWithValue("@Login", login);
-
-                SqlParameter resultParameter = new SqlParameter("@Result", SqlDbType.Int);
-                resultParameter.Direction = ParameterDirection.Output;
-                command.Parameters.Add(resultParameter);
-
-                await connection.OpenAsync();
-                await command.ExecuteNonQueryAsync();
-
-                return (int)resultParameter.Value;
-            }
-        }
-    }
-
-    public static async Task<string> GetUserHashPassword(string login)//Получение Хэш-пароля пользователя(OP)
     {
         try
         {
             using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
             {
-                using (SqlCommand command = new SqlCommand("GetUserPasswordProcedure", connection))
+                using (SqlCommand command = new SqlCommand("AddUserProcedure", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add(new SqlParameter("@Login", SqlDbType.NVarChar, -1) { Value = login });
+                    command.Parameters.AddWithValue("@Login", login);
+                    command.Parameters.AddWithValue("@Password", password);
 
-                    SqlParameter paramResult = new SqlParameter("@Password", SqlDbType.NVarChar, -1) { Direction =  ParameterDirection.Output };
-                    command.Parameters.Add(paramResult);
-
+                    SqlParameter resultParameter = new SqlParameter("@Result", SqlDbType.Int);
+                    resultParameter.Direction = ParameterDirection.Output;
+                    command.Parameters.Add(resultParameter);
                     await connection.OpenAsync();
                     await command.ExecuteNonQueryAsync();
+                    await connection.CloseAsync();
 
-                    return (string)paramResult.Value;
+                    return (int)resultParameter.Value;
                 }
             }
-
         }
         catch (Exception ex)
         {
-            MessageBox.Show("GetUserHashPassword\n" + ex.Message);
-            return string.Empty;
+            await LogFile.AddLogMessageAsync("AddUserAsync", ex.Message, null, true);
         }
+        return 0;
     }
-
     public static async Task<int> AddCategories(int id, string categoryName)//Добавление категории в БД(OP)
     {
         try
@@ -159,11 +116,10 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при добавлении данных в таблицу Category:\n\n" + ex.Message);
-            return 0;
+            await LogFile.AddLogMessageAsync("AddCategories", ex.Message, null, true);
         }
+        return 0;
     }
-
     public static async Task<int> AddProductName(string article, int categoryId, string productName)//Добавление продукта в БД(OP)
     {
         try
@@ -191,12 +147,10 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при добавлении данных в таблицу ProductNames:\n\n" + ex.Message);
-            return 0;
+            await LogFile.AddLogMessageAsync("AddProductName", ex.Message, null, true);
         }
-
+        return 0;
     }
-
     public static async Task<int> AddProductPrice(string productId, decimal price)//Добавление цены на продукт в БД(OP)
     {
         try
@@ -224,12 +178,10 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при добавлении данных в таблицу ProductPrices:\n\n" + ex.Message);
-            return 0;
+            await LogFile.AddLogMessageAsync("AddProductPrice", ex.Message, null, true);
         }
-
+        return 0;
     }
-
     public static async Task<int> AddAttributeName(string attributeName)//Добавление названия характеристики в БД(OP)
     {
         try
@@ -255,11 +207,10 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при добавлении данных в таблицу Attribute:\n\n" + ex.Message);
-            return 0;
+            await LogFile.AddLogMessageAsync("AddAttributeName", ex.Message, null, true);
         }
+        return 0;
     }
-
     public static async Task<int> AddAttributeValue(string productId, string attributeName, string value)//Добавление значений характеристик в БД(OP)
     {
         try
@@ -287,13 +238,71 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при добавлении данных в таблицу AttributeValues:\n\n" +  ex.Message);
-            return 0;
+            await LogFile.AddLogMessageAsync("AddAttributeValue", ex.Message, null, true);
         }
-
+        return 0;
     }
+    #endregion Добавление данных
 
+    #region Получение данных
+    public static async Task<int> CheckUserAsync(string login)//Проверка существования пользователя в БД(OP)
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
+            {
+                using (SqlCommand command = new SqlCommand("CheckUserProcedure", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
 
+                    command.Parameters.AddWithValue("@Login", login);
+
+                    SqlParameter resultParameter = new SqlParameter("@Result", SqlDbType.Int);
+                    resultParameter.Direction = ParameterDirection.Output;
+                    command.Parameters.Add(resultParameter);
+
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
+
+                    return (int)resultParameter.Value;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await LogFile.AddLogMessageAsync("CheckUserAsync", ex.Message, null, true);
+        }
+        return 0;
+    }
+    public static async Task<string> GetUserHashPassword(string login)//Получение Хэш-пароля пользователя(OP)
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
+            {
+                using (SqlCommand command = new SqlCommand("GetUserPasswordProcedure", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    command.Parameters.Add(new SqlParameter("@Login", SqlDbType.NVarChar, -1) { Value = login });
+
+                    SqlParameter paramResult = new SqlParameter("@Password", SqlDbType.NVarChar, -1) { Direction =  ParameterDirection.Output };
+                    command.Parameters.Add(paramResult);
+
+                    await connection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
+
+                    return (string)paramResult.Value;
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await LogFile.AddLogMessageAsync("GetUserHashPassword", ex.Message, null, true);
+        }
+        return string.Empty;
+    }
     public static async Task<List<Category>> GetAllCategories(int categoryID = 0)//Получение всех категорий продуктов(OP)
     {
         List<Category> categories = new List<Category>();
@@ -329,10 +338,9 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы Category:\n\n" + ex.Message);
-            return null;
+            await LogFile.AddLogMessageAsync("GetAllCategories", ex.Message, null, true);
         }
-
+        return null;
     }
     public static async Task<List<ProductName>> GetAllProducts()//Получение всех продуктов(ОР)
     {
@@ -365,10 +373,9 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы ProductNames:\n\n" + ex.Message);
-            return null;
+            await LogFile.AddLogMessageAsync("GetAllProducts", ex.Message, null, true);
         }
-
+        return null;
     }
     public static async Task<List<ProductAttribute>> GetAllAttributes()//Получение всех назваий всех характеристик(ОР)
     {
@@ -400,7 +407,7 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы ProductNames:\n\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("GetAllAttributes", ex.Message, null, true);
             return null;
         }
 
@@ -438,7 +445,7 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы ProductNames:\n\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("GetAllAttributeValues", ex.Message, null, true);
             return null;
         }
 
@@ -475,7 +482,7 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы AveragePrices:\n\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("GetAveragePricesAsync", ex.Message, null, true);
             return null;
         }
 
@@ -513,7 +520,7 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы AveragePrices:\n\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("GetAllPriceIndexes", ex.Message, null, true);
             return null;
         }
 
@@ -548,12 +555,70 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("Ошибка при получении данных из таблицы Prices:\n\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("GetAllPricesAsync", ex.Message, null, true);
             return null;
         }
 
     }
+    public static async Task<DateTime?> GetLastDate()//Получение последней даты обновления(OP)
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
+            {
+                await connection.OpenAsync();
 
+                using (SqlCommand command = new SqlCommand("GetLastPriceDate", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    var outputParam = new SqlParameter("@LastPriceDate", SqlDbType.Date) { Direction = ParameterDirection.Output };
+                    command.Parameters.Add(outputParam);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    if (outputParam.Value != DBNull.Value) return (DateTime?)outputParam.Value;
+                }
+            }
+        }
+        catch (SqlException ex)
+        {
+            await LogFile.AddLogMessageAsync("GetLastDate", ex.Message, null, true);
+        }
+
+        return null;
+    }
+    public static async Task<DateTime?> GetFirstDate()//Получение первой даты обновления(OP)
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
+            {
+                await connection.OpenAsync();
+
+                using (SqlCommand command = new SqlCommand("GetFirstPriceDate", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    var outputParam = new SqlParameter("@FirstPriceDate", SqlDbType.Date) { Direction = ParameterDirection.Output };
+                    command.Parameters.Add(outputParam);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    if (outputParam.Value != DBNull.Value) return (DateTime?)outputParam.Value;
+                }
+            }
+        }
+        catch (SqlException ex)
+        {
+            await LogFile.AddLogMessageAsync("GetFirstDate", ex.Message, null, true);
+        }
+
+        return null;
+    }
+    #endregion Получение данных
+
+    #region Расчет данных
     public static async Task<int> CalculateAveragePrices(int categoryId)//Рассчет и вставка данных в таблицу средних цен(ОР)
     {
         try
@@ -580,7 +645,7 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("CalculateAveragePrices\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("CalculateAveragePrices", ex.Message, null, true);
             return 0;
         }
     }
@@ -609,68 +674,12 @@ public static class SQLScripts
         }
         catch (SqlException ex)
         {
-            MessageBox.Show("CalculatePriceIndexes\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("CalculatePriceIndexes", ex.Message, null, true);
             return 0;
         }
 
     }
-
-    public static async Task<DateTime?> GetLastDate()//Получение последней даты обновления(OP)
-    {
-        try
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
-            {
-                await connection.OpenAsync();
-
-                using (SqlCommand command = new SqlCommand("GetLastPriceDate", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    var outputParam = new SqlParameter("@LastPriceDate", SqlDbType.Date) { Direction = ParameterDirection.Output };
-                    command.Parameters.Add(outputParam);
-
-                    await command.ExecuteNonQueryAsync();
-
-                    if (outputParam.Value != DBNull.Value) return (DateTime?)outputParam.Value;
-                }
-            }
-        }
-        catch (SqlException ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-
-        return null;
-    }
-    public static async Task<DateTime?> GetFirstDate()//Получение первой даты обновления(OP)
-    {
-        try
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
-            {
-                await connection.OpenAsync();
-
-                using (SqlCommand command = new SqlCommand("GetFirstPriceDate", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    var outputParam = new SqlParameter("@FirstPriceDate", SqlDbType.Date) { Direction = ParameterDirection.Output };
-                    command.Parameters.Add(outputParam);
-
-                    await command.ExecuteNonQueryAsync();
-
-                    if (outputParam.Value != DBNull.Value) return (DateTime?)outputParam.Value;
-                }
-            }
-        }
-        catch (SqlException ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-
-        return null;
-    }
+    #endregion Расчет данных
 
     static async Task ExecuteSQLScriptNonQueryAsync()//Выполнение скрипта(OP)
     {
@@ -703,9 +712,7 @@ public static class SQLScripts
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Произошла ошибка: {ex.Message}");
+            await LogFile.AddLogMessageAsync("ExecuteSQLScriptNonQueryAsync", ex.Message, null, true);
         }
     }
-
-
 }

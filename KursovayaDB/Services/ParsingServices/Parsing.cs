@@ -10,7 +10,6 @@ namespace KursovayaDB.Services.ParsingServices;
 public class Parsing
 {
     private static MainViewModel mainViewModelInstance = null!;
-
     private static HtmlWeb htmlWeb = new HtmlWeb();
 
     #region Списки
@@ -23,7 +22,6 @@ public class Parsing
 
     #region Блокировщики
 
-    private static readonly Mutex logMutex = new Mutex();
     private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(5);//Количество одновременных запросов
     private static readonly SemaphoreSlim productsLock = new SemaphoreSlim(1);
     private static readonly SemaphoreSlim attributesLock = new SemaphoreSlim(1);
@@ -31,34 +29,24 @@ public class Parsing
 
     #endregion Блокировщики
 
-    public static async Task ParseAllAsync(MainViewModel mainVMI)//Парсинг всего
+    public static async Task ParseAllAsync(MainViewModel mainVMI)//Парсинг всего(Оптимизировано)
     {
         try
         {
             mainViewModelInstance = mainVMI;
             HtmlDocument doc = new HtmlDocument();
 
-            /*await ParseWheatFlour();
-            await ParseSugar();
-            await ParseSourCream();
-            await ParseKvas();
-            await ParseUksus();
-            await ParseHalva();
-            await ParseApples();
-            await ParseTomatoSouse();
-            await ParseKrupaGrechnevaya();
-            await ParseHoney();*/
-
             await Task.WhenAll(ParseWheatFlour(), ParseSugar(), ParseSourCream(), ParseKvas(),
                 ParseUksus(), ParseHalva(), ParseApples(), ParseTomatoSouse(), ParseKrupaGrechnevaya(), ParseHoney());
         }
         catch (Exception ex)
         {
-            MessageBox.Show("ParseAllAsync:\n" + ex.Message);
+            await LogFile.AddLogMessageAsync("ParseAllAsync", ex.Message, mainViewModelInstance, true);
         }
     }
 
     #region Парсинг опрделенных категорий продуктов
+
     public static async Task ParseWheatFlour()//Парсинг категории "Мука пшеничная"(OP)
     {
         await ParseCategoryAsync("https://edostavka.by/category/5152?lc=2");
@@ -101,10 +89,12 @@ public class Parsing
             "%3A%5B%7B%22PropertyId%22%3A149%2C%22PropertyValueId%22%3A%5B17384%5D%2C%22PropertyValueFloat%2" +
             "2%3A%22%22%2C%22PropertyValueMin%22%3A%22%22%2C%22PropertyValueMax%22%3A%22%22%7D%5D%7D");
     }
+
     #endregion Парсинг опрделенных категорий продуктов
 
 
     #region Общий парсинг
+
     static async Task ParseCategoryAsync(string categoryUrl)//Парсинг категории(Оптимизировано)
     {
         int currentAttempt = 0;
@@ -149,11 +139,10 @@ public class Parsing
             catch (Exception ex)
             {
                 currentAttempt++;
-                await AddLogMessageAsync("ParseCategoryAsync", $"Ошибка {ex.Message} при загрузке страницы {categoryUrl}. Повторная попытка {currentAttempt}", true);
+                await LogFile.AddLogMessageAsync("ParseCategoryAsync", $"Ошибка {ex.Message} при загрузке страницы {categoryUrl}. Повторная попытка {currentAttempt}", mainViewModelInstance, true);
             }
         }
     }
-
     static async Task ParseProductAsync(string href, Category category)//Парсинг продукта(Оптимизировано)
     {
         int currentAttempt = 0;
@@ -164,9 +153,9 @@ public class Parsing
             {
                 await semaphore.WaitAsync();
 
-                await AddLogMessageAsync("ParseProductAsync", $"Попытка загрузить стрaницу: {href}");
+                await LogFile.AddLogMessageAsync("ParseProductAsync", $"Попытка загрузить стрaницу: {href}", mainViewModelInstance);
                 var doc = await htmlWeb.LoadFromWebAsync(href).ConfigureAwait(false);
-                await AddLogMessageAsync("ParseProductAsync", $"Страница {href} загружена успешно!");
+                await LogFile.AddLogMessageAsync("ParseProductAsync", $"Страница {href} загружена успешно!", mainViewModelInstance);
 
                 string productName = await GetProductName(doc);//Получаем название продукта
 
@@ -193,7 +182,7 @@ public class Parsing
             catch (Exception ex)
             {
                 currentAttempt++;
-                await AddLogMessageAsync("ParseProductAsync", $"Ошибка {ex.Message} при загрузке страницы {href}. Повторная попытка {currentAttempt}", true);
+                await LogFile.AddLogMessageAsync("ParseProductAsync", $"Ошибка {ex.Message} при загрузке страницы {href}. Повторная попытка {currentAttempt}", mainViewModelInstance, true);
             }
             finally
             {
@@ -201,7 +190,6 @@ public class Parsing
             }
         }
     }
-
     static async Task ParseAttributeAsync(HtmlDocument? doc)//Парсинг названий характеристик
     {
         try
@@ -242,10 +230,9 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("ParseAttributeAsync", ex.Message, true);
+            await LogFile.AddLogMessageAsync("ParseAttributeAsync", ex.Message, mainViewModelInstance, true);
         }
     }
-
     static async Task ParceAttributeValueAsync(string href, ProductName product)//Парсинг значений характеристик
     {
         var doc = await htmlWeb.LoadFromWebAsync(href).ConfigureAwait(false);
@@ -325,11 +312,10 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("GetProductCategoryName", ex.Message, true);
+            await LogFile.AddLogMessageAsync("GetProductCategoryName", ex.Message, mainViewModelInstance, true);
         }
         return "Неизвестно";
     }
-
     static async Task<string> GetProductName(HtmlDocument doc)//Метод получения названия продукта (Оптимизировано)
     {
         try
@@ -349,12 +335,11 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("GetProductName", ex.Message, true);
+            await LogFile.AddLogMessageAsync("GetProductName", ex.Message, mainViewModelInstance, true);
         }
 
         return "Неизвестно";
     }
-
     static async Task<decimal> GetProductPrice(HtmlDocument doc, string productName)//Метод получения цены продукта
     {
         string? price = doc.DocumentNode.SelectSingleNode("//span[@class='price_price_kg__Oy2cx']") == null ?
@@ -454,7 +439,6 @@ public class Parsing
 
         return 0.00m;
     }
-
     static async Task<string> GetAttributeName(HtmlNode? attribute)//Получение названия характеристики (Оптимизировано)
     {
         try
@@ -473,12 +457,11 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("GetAttributeName", ex.Message, true);
+            await LogFile.AddLogMessageAsync("GetAttributeName", ex.Message, mainViewModelInstance, true);
         }
 
         return "Неизвестно";
     }
-
     static async Task<string> GetAttributeValue(HtmlNode? attribute)//Получение значения характеристики (Оптимизировано)
     {
         try
@@ -498,7 +481,7 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("GetAttributeValue", ex.Message, true);
+            await LogFile.AddLogMessageAsync("GetAttributeValue", ex.Message, mainViewModelInstance, true);
         }
 
         return "Undefined";
@@ -514,12 +497,11 @@ public class Parsing
         }
         catch (Exception ex)
         {
-            await AddLogMessageAsync("GetArticleFromUrl", ex.Message, true);
+            await LogFile.AddLogMessageAsync("GetArticleFromUrl", ex.Message, mainViewModelInstance, true);
         }
 
         return "Неизвестно";
     }
-
     #endregion
 
     static async Task<HtmlNodeCollection> GetAttributes(HtmlNode? attributeContainer)//Получение названий и значений характеристик
@@ -546,23 +528,6 @@ public class Parsing
         else
         {
             return null;
-        }
-    }
-
-
-    private static async Task AddLogMessageAsync(string methodName, string message, bool isError = false)//Добавление Log для вывода (Оптимизировано)
-    {
-        mainViewModelInstance.LogText += $"{message}\n";
-
-        logMutex.WaitOne();
-
-        try
-        {
-            await LogFile.WriteMessage(methodName, message, isError);
-        }
-        finally
-        {
-            logMutex.ReleaseMutex();
         }
     }
 }
