@@ -1,6 +1,7 @@
 ﻿using FullControls.Controls;
 using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -16,10 +17,10 @@ public partial class ProductsPage : Page
     public ProductsPage()
     {
         InitializeComponent();
-        GenerateDataGrid();
+        Generate();
     }
 
-    async void GenerateDataGrid()
+    async void Generate()
     {
         try
         {
@@ -28,11 +29,11 @@ public partial class ProductsPage : Page
         }
         finally
         {
-            Generating();
+            CreateAccordion();
         }
     }
 
-    async Task InitializeLists()
+    async Task InitializeLists()//Инициализация списков (Оптимизировано)
     {
         uniqueCategories = await SQLScripts.GetAllCategories();
         uniqueProducts = await SQLScripts.GetAllProducts();
@@ -40,9 +41,8 @@ public partial class ProductsPage : Page
         attributeValues = await SQLScripts.GetAllAttributeValues();
         productPrices = await SQLScripts.GetAllPricesAsync();
     }
-    void Generating()
+    private void CreateAccordion()//Создание аккордиона
     {
-
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
         foreach (var category in uniqueCategories.OrderBy(x => x.Id))
