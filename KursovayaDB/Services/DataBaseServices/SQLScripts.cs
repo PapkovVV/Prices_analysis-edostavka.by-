@@ -545,7 +545,8 @@ public static class SQLScripts
                             productPrices.Add(new ProductPrice
                             {
                                 Price = reader.GetDecimal("Price"),
-                                ProductId = reader.GetString("ProductId")
+                                ProductId = reader.GetString("ProductId"),
+                                PriceDate = reader.GetDateTime("PriceDate")
                             });
                         }
                     }

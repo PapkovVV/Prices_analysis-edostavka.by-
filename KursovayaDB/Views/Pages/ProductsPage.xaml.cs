@@ -68,8 +68,10 @@ public partial class ProductsPage : Page
                     IsExpanded = false,
                 };
 
+                var productPrice = productPrices.Where(x => x.PriceDate == DateTime.Now.Date).FirstOrDefault(x => x.ProductId.Equals(product.Article));//Объект цены продукта
+
                 List<string> attribute_value = new List<string>();
-                var productPrice = productPrices.FirstOrDefault(x => x.ProductId.Equals(product.Article));
+
                 if (productPrice != null)
                 {
                     foreach (var attributeValue in attributeValues.Where(x => x.ProductId.Equals(product.Article)))
