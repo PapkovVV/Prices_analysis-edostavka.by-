@@ -1,7 +1,7 @@
 ﻿using FullControls.Controls;
 using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
-using System.Diagnostics;
+using KursovayaDB.ViewModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -16,6 +16,7 @@ public partial class ProductsPage : Page
     List<ProductPrice> productPrices;
     public ProductsPage()
     {
+        DataContext = new ProductsPageViewModel();
         InitializeComponent();
         Generate();
     }
@@ -46,7 +47,7 @@ public partial class ProductsPage : Page
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
         foreach (var category in uniqueCategories.OrderBy(x => x.Id))
-        {            
+        {
             var catItem = new SimpleAccordionItem
             {
                 Header = category.Name,
@@ -88,7 +89,7 @@ public partial class ProductsPage : Page
                     };
                     products.Add(productItem);
                 }
-                
+
             }
             catItem.Content = new ItemsControl()
             {
