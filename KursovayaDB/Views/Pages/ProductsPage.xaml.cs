@@ -24,6 +24,7 @@ public partial class ProductsPage : Page
         try
         {
             await InitializeLists();
+            await GenerateCategoriesCombo();
         }
         finally
         {
@@ -45,12 +46,7 @@ public partial class ProductsPage : Page
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
         foreach (var category in uniqueCategories.OrderBy(x => x.Id))
-        {
-            categoriesCombo.Items.Add(new ComboBoxItemPlus
-            {
-                Content = category.Name
-            });
-
+        {            
             var catItem = new SimpleAccordionItem
             {
                 Header = category.Name,
@@ -100,6 +96,17 @@ public partial class ProductsPage : Page
             accordionItemsCollection.Add(catItem);
         }
 
+    }
+
+    private async Task GenerateCategoriesCombo()//Генерация элементов ComboBox категорий (Оптимизировано)
+    {
+        foreach (var category in uniqueCategories)
+        {
+            categoriesCombo.Items.Add(new ComboBoxItemPlus
+            {
+                Content = category.Name
+            });
+        }
     }
 
     private void categoriesCombo_TextChanged(object sender, TextChangedEventArgs e)
