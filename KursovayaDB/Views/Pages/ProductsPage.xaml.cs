@@ -57,6 +57,9 @@ public partial class ProductsPage : Page
     }
     private void CreateAccordion(DateTime? pricesDate = null)//Создание аккордиона
     {
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+
         pricesDate = pricesDate ?? DateTime.Now.Date;
 
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
@@ -70,8 +73,11 @@ public partial class ProductsPage : Page
                 IsExpanded = false
             };
 
-            List<SimpleAccordionItem> products = new List<SimpleAccordionItem>();
-            foreach (var product in uniqueProducts.Where(x => x.CategoryId == category.Id))
+            List<SimpleAccordionItem> products = new List<SimpleAccordionItem>();//Список элементов продуктов
+            List<string> neededArticles = productPrices.Where(x => x.PriceDate.Date == pricesDate?.Date).Select(x => x.ProductId).ToList();//Артикулы продуктов для отображения
+            List<ProductName> neededProducts = uniqueProducts.Where(x => x.CategoryId == category.Id && neededArticles.Contains(x.Article)).ToList();//Необходимые продукты
+
+            foreach (var product in neededProducts)
             {
                 var productItem = new SimpleAccordionItem
                 {
@@ -113,6 +119,9 @@ public partial class ProductsPage : Page
 
             accordionItemsCollection.Add(catItem);
         }
+
+        stopwatch.Stop();
+        MessageBox.Show(stopwatch.ElapsedMilliseconds + "");
     }
 
     private async Task GenerateCategoriesCombo()//Генерация элементов ComboBox категорий (Оптимизировано)
