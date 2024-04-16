@@ -151,7 +151,7 @@ public partial class DataPage : Page
 
         List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
-        GenerateDataTable(uniqueCategories,averagePrices, uniqueDates);
+        GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);
     }
 
     #region Все для генерации DataGrid с необходимыми данными
@@ -215,58 +215,24 @@ public partial class DataPage : Page
                 var header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
                 for (int i = 0; i < uniqueCategories.Count; i++)
                 {
-                    if (startPrice == null && lastPrice == null)
-                    {
-                        var price = averagePrices.
-                        FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
-                        x.AveragePriceDate == date);
+                    var categoryName = uniqueCategories.ElementAt(i);
+                    var price = averagePrices.FirstOrDefault(x =>
+                        x.CategoryName.Equals(categoryName) &&
+                        x.AveragePriceDate == date &&
+                        (startPrice == null || x.Average_Price >= startPrice) &&
+                        (lastPrice == null || x.Average_Price <= lastPrice));
 
-                        if (price != null)
-                        {
-                            dataTable.Rows[i][header] = price.Average_Price;
-                        }
-                    }
-                    else if (startPrice != null && lastPrice == null)
+                    if (price != null)
                     {
-                        var price = averagePrices.
-                        FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
-                        x.AveragePriceDate == date && x.Average_Price >= startPrice);
-                        if (price != null)
-                        {
-                            dataTable.Rows[i][header] = price.Average_Price;
-                        }
-                    }
-                    else if (startPrice == null && lastPrice != null)
-                    {
-                        var price = averagePrices.
-                        FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
-                        x.AveragePriceDate == date && x.Average_Price <= lastPrice);
-
-                        if (price != null)
-                        {
-                            dataTable.Rows[i][header] = price.Average_Price;
-                        }
-                    }
-                    else
-                    {
-                        var price = averagePrices.
-                        FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
-                        x.AveragePriceDate == date && x.Average_Price >= startPrice && x.Average_Price <= lastPrice);
-
-                        if (price != null)
-                        {
-                            dataTable.Rows[i][header] = price.Average_Price;
-                        }
+                        dataTable.Rows[i][header] = price.Average_Price;
                     }
                 }
             }
 
             DataTable filteredDataTable = dataTable.Clone();
 
-            // Пройдите по каждой строке в исходной таблице
             foreach (DataRow row in dataTable.Rows)
             {
-                // Проверьте, есть ли хотя бы одна пустая ячейка в текущей строке
                 bool hasEmptyCell = false;
                 foreach (var item in row.ItemArray)
                 {
@@ -277,7 +243,6 @@ public partial class DataPage : Page
                     }
                 }
 
-                // Если все ячейки в текущей строке заполнены, добавьте эту строку в отфильтрованную таблицу
                 if (!hasEmptyCell)
                 {
                     filteredDataTable.Rows.Add(row.ItemArray);
@@ -285,15 +250,12 @@ public partial class DataPage : Page
             }
 
             dataTable = filteredDataTable;
-
-            SeTDataGrid();
         }
         else
         {
-            dataTable = new DataTable();
             dataGrid.Columns.Clear();
         }
-
+        SeTDataGrid();
     }
     void SeTDataGrid()//Генерация таблицы для отображения необходимых данных(Оптимизировано)
     {
