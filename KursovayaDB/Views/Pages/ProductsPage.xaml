@@ -19,7 +19,8 @@
                          TextBoxBase.TextChanged="categoriesCombo_TextChanged" IsTextSearchEnabled="False"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5 5 10 10">
                 <Label Content="Цены продуктов на"/>
-                <fc:ComboBoxPlus x:Name="pricesDatesCombo" Width="auto" VerticalContentAlignment="Center" IsEditable="False" SelectedIndex="0"/>
+                <fc:ComboBoxPlus x:Name="pricesDatesCombo" Width="auto" VerticalContentAlignment="Center" IsEditable="False"
+                                 SelectionChanged="pricesDatesCombo_SelectionChanged" PreviewMouseDown="pricesDatesCombo_PreviewMouseDown"/>
             </StackPanel>
         </StackPanel>
         <fc:GlassScrollViewer Grid.Row="1">

@@ -3,6 +3,7 @@ using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
 using KursovayaDB.ViewModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,6 +11,8 @@ using System.Windows.Media;
 namespace KursovayaDB.Views.Pages;
 public partial class ProductsPage : Page
 {
+    private bool isUserClick = false;
+
     List<Category> uniqueCategories;
     List<ProductName> uniqueProducts;
     List<ProductAttribute> uniqueAttributes;
@@ -52,8 +55,10 @@ public partial class ProductsPage : Page
         attributeValues = await getAllAttributeValuesTask;
         productPrices = await getAllPricesTask;
     }
-    private void CreateAccordion(DateTime? pricesDate)//Создание аккордиона
+    private void CreateAccordion(DateTime? pricesDate = null)//Создание аккордиона
     {
+        pricesDate = pricesDate ?? DateTime.Now.Date;
+
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
         foreach (var category in uniqueCategories.OrderBy(x => x.Id))
@@ -132,6 +137,8 @@ public partial class ProductsPage : Page
                 Content = date.Date.ToString("dd MMMM yyyy")
             });
         }
+
+        pricesDatesCombo.SelectedIndex = uniqueAttributes.Count - 1;
     }
 
     private void categoriesCombo_TextChanged(object sender, TextChangedEventArgs e)
@@ -151,5 +158,28 @@ public partial class ProductsPage : Page
                 }
             }
         }
+    }
+
+    private void pricesDatesCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (isUserClick)
+        {
+            var selectedItem = pricesDatesCombo.SelectedItem as ComboBoxItemPlus;
+            if (selectedItem != null)
+            {
+                DateTime neededDate = DateTime.ParseExact(selectedItem.Content.ToString().Trim(), "dd MMMM yyyy", CultureInfo.CurrentCulture);
+                if (accordion.HasItems)
+                {
+                    accordion.Items.Clear();
+                    CreateAccordion(neededDate);
+                }
+            }
+        }
+        isUserClick = false;
+    }
+
+    private void pricesDatesCombo_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        isUserClick = true;
     }
 }
