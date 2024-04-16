@@ -2,6 +2,7 @@
 using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
 using KursovayaDB.ViewModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -14,6 +15,7 @@ public partial class ProductsPage : Page
     List<ProductAttribute> uniqueAttributes;
     List<AttributeValues> attributeValues;
     List<ProductPrice> productPrices;
+
     public ProductsPage()
     {
         DataContext = new ProductsPageViewModel();
@@ -26,11 +28,11 @@ public partial class ProductsPage : Page
         try
         {
             await InitializeLists();
-            await GenerateCategoriesCombo();
+            await Task.WhenAll(GenerateCategoriesCombo(), GeneratePricesDatesCombo());
         }
         finally
         {
-            CreateAccordion();
+            CreateAccordion(DateTime.Now.Date);
         }
     }
 
@@ -42,7 +44,7 @@ public partial class ProductsPage : Page
         attributeValues = await SQLScripts.GetAllAttributeValues();
         productPrices = await SQLScripts.GetAllPricesAsync();
     }
-    private void CreateAccordion()//Создание аккордиона
+    private void CreateAccordion(DateTime? pricesDate)//Создание аккордиона
     {
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
@@ -69,7 +71,7 @@ public partial class ProductsPage : Page
                     IsExpanded = false,
                 };
 
-                var productPrice = productPrices.Where(x => x.PriceDate == DateTime.Now.Date).FirstOrDefault(x => x.ProductId.Equals(product.Article));//Объект цены продукта
+                var productPrice = productPrices.Where(x => x.PriceDate.Date == pricesDate?.Date).FirstOrDefault(x => x.ProductId.Equals(product.Article));//Объект цены продукта
 
                 List<string> attribute_value = new List<string>();
 
@@ -98,7 +100,6 @@ public partial class ProductsPage : Page
 
             accordionItemsCollection.Add(catItem);
         }
-
     }
 
     private async Task GenerateCategoriesCombo()//Генерация элементов ComboBox категорий (Оптимизировано)
@@ -108,6 +109,19 @@ public partial class ProductsPage : Page
             categoriesCombo.Items.Add(new ComboBoxItemPlus
             {
                 Content = category.Name
+            });
+        }
+    }
+
+    private async Task GeneratePricesDatesCombo()//Генерация элементов ComboBox ценовых дат (Оптимизировано)
+    {
+        List<DateTime> uniqueDates = productPrices.Select(x => x.PriceDate).Distinct().ToList();
+
+        foreach (var date in uniqueDates)
+        {
+            pricesDatesCombo.Items.Add(new ComboBoxItemPlus
+            {
+                Content = date.Date.ToString("dd MMMM yyyy")
             });
         }
     }

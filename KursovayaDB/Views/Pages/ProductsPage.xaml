@@ -19,19 +19,7 @@
                          TextBoxBase.TextChanged="categoriesCombo_TextChanged" IsTextSearchEnabled="False"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5 5 10 10">
                 <Label Content="Цены продуктов на"/>
-                <DatePicker Width="auto" VerticalAlignment="Bottom" VerticalContentAlignment="Center" SelectedDate="{Binding SelectedProductPricesDate}"
-                            BorderThickness="0" HorizontalContentAlignment="Center">
-                    <DatePicker.Resources>
-                        <Style TargetType="DatePickerTextBox">
-                            <Setter Property="IsReadOnly" Value="True"/>
-                            <Setter Property="Cursor" Value="Arrow"/>
-                            <Setter Property="SelectionBrush" Value="Transparent"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderBrush" Value="Transparent"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
-                    </DatePicker.Resources>
-                </DatePicker>
+                <fc:ComboBoxPlus x:Name="pricesDatesCombo" Width="auto" VerticalContentAlignment="Center" IsEditable="False"/>
             </StackPanel>
         </StackPanel>
         <fc:GlassScrollViewer Grid.Row="1">
