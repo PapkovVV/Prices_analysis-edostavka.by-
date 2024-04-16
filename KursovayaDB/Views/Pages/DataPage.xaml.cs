@@ -151,7 +151,47 @@ public partial class DataPage : Page
 
         List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
-        // Создайте DataTable и добавьте столбцы
+        GenerateDataTable(uniqueCategories,averagePrices, uniqueDates);
+    }
+
+    #region Все для генерации DataGrid с необходимыми данными
+
+    private async Task<List<string>> GetNeededCategories()//Получение необходимых категорий для отображения (Оптимизировано)
+    {
+        var allCategories = await SQLScripts.GetAllCategories();
+
+        if (!string.IsNullOrEmpty(categoriesCombo.Text))
+        {
+            return allCategories.Select(x => x.Name).
+                Where(x => x.ToLower().StartsWith(categoriesCombo.Text.ToLower())).OrderBy(x => x).Distinct().ToList();
+        }
+        return allCategories.Select(x => x.Name).OrderBy(x => x).Distinct().ToList();
+    }
+    private List<T> GetNeededObjects<T>(List<T> dataList)//Получение списка объектов в соответствии с поиском (Оптимизировано)
+    {
+        List<T> result = new List<T>();//Список результата
+
+        if (typeof(T) == typeof(AveragePrice))
+        {
+            List<AveragePrice> averagePrices = dataList.Cast<AveragePrice>().ToList();
+            if (averagePrices.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
+            {
+                result = averagePrices.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
+            }
+        }
+        else
+        {
+            List<PriceIndex> priceIndexes = dataList.Cast<PriceIndex>().ToList();
+            if (priceIndexes.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
+            {
+                result = priceIndexes.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
+            }
+        }
+
+        return result;
+    }
+    private void GenerateDataTable(List<string> uniqueCategories, List<AveragePrice> averagePrices, List<DateTime> uniqueDates)//Генерация основы данных для DataGrid
+    {
         if (uniqueDates != null && uniqueDates.Count > 0)
         {
             dataTable = new DataTable();
@@ -246,9 +286,7 @@ public partial class DataPage : Page
 
             dataTable = filteredDataTable;
 
-            // Теп
             SeTDataGrid();
-
         }
         else
         {
@@ -256,43 +294,6 @@ public partial class DataPage : Page
             dataGrid.Columns.Clear();
         }
 
-    }
-
-    #region Все для генерации DataGrid с необходимыми данными
-
-    private async Task<List<string>> GetNeededCategories()//Получение необходимых категорий для отображения (Оптимизировано)
-    {
-        var allCategories = await SQLScripts.GetAllCategories();
-
-        if (!string.IsNullOrEmpty(categoriesCombo.Text))
-        {
-            return allCategories.Select(x => x.Name).
-                Where(x => x.ToLower().StartsWith(categoriesCombo.Text.ToLower())).OrderBy(x => x).Distinct().ToList();
-        }
-        return allCategories.Select(x => x.Name).OrderBy(x => x).Distinct().ToList();
-    }
-    private List<T> GetNeededObjects<T>(List<T> dataList)//Получение списка объектов в соответствии с поиском (Оптимизировано)
-    {
-        List<T> result = new List<T>();//Список результата
-
-        if (typeof(T) == typeof(AveragePrice))
-        {
-            List<AveragePrice> averagePrices = dataList.Cast<AveragePrice>().ToList();
-            if (averagePrices.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
-            {
-                result = averagePrices.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
-            }
-        }
-        else
-        {
-            List<PriceIndex> priceIndexes = dataList.Cast<PriceIndex>().ToList();
-            if (priceIndexes.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
-            {
-                result = priceIndexes.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
-            }
-        }
-
-        return result;
     }
     void SeTDataGrid()//Генерация таблицы для отображения необходимых данных(Оптимизировано)
     {
