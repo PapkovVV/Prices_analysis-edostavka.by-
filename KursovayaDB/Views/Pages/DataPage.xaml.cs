@@ -1,6 +1,5 @@
 ﻿using FullControls.Controls;
 using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
 using KursovayaDB.ViewModel;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -52,18 +51,7 @@ public partial class DataPage : Page
     async void GeneratePriceIndexesDataGrid()//Генерация Индексов DataGrid
     {
         var priceIndexes = await SQLScripts.GetAllPriceIndexes();
-        List<string> uniqueCategories = null;
-
-
-        if (!string.IsNullOrEmpty(categoriesCombo.Text))
-        {
-            uniqueCategories = priceIndexes.Select(x => x.CategoryName).Where(x => x.ToLower().Contains(categoriesCombo.Text.ToLower())).
-                OrderBy(x => x).Distinct().ToList();
-        }
-        else
-        {
-            uniqueCategories = priceIndexes.Select(x => x.CategoryName).OrderBy(x => x).Distinct().ToList();
-        }
+        List<string> uniqueCategories = await GetNeededCategories();
 
         if (categoriesCombo.SelectedValue != null)
         {
@@ -150,7 +138,7 @@ public partial class DataPage : Page
     {
         var averagePrices = await SQLScripts.GetAveragePricesAsync();
 
-        List<string> uniqueCategories = GetNeededCategories(averagePrices); //Категории для добавления в DataGrid
+        List<string> uniqueCategories = await GetNeededCategories(); //Категории для добавления в DataGrid
 
         if (!string.IsNullOrEmpty(categoriesCombo.Text))
         {
@@ -296,17 +284,16 @@ public partial class DataPage : Page
 
     }
 
-    private List<string> GetNeededCategories(List<AveragePrice> averagePrices)//Получение необходимых категорий для отображения (Оптимизировано)
+    private async Task<List<string>> GetNeededCategories()//Получение необходимых категорий для отображения (Оптимизировано)
     {
+        var allCategories = await SQLScripts.GetAllCategories();
+
         if (!string.IsNullOrEmpty(categoriesCombo.Text))
         {
-            return averagePrices.Select(x => x.CategoryName).
+            return allCategories.Select(x => x.Name).
                 Where(x => x.ToLower().StartsWith(categoriesCombo.Text.ToLower())).OrderBy(x => x).Distinct().ToList();
         }
-        else
-        {
-            return averagePrices.Select(x => x.CategoryName).OrderBy(x => x).Distinct().ToList();
-        }
+        return allCategories.Select(x => x.Name).OrderBy(x => x).Distinct().ToList();
     }
 
     void SeTDataGrid()//Генерация таблицы для отображения необходимых данных
