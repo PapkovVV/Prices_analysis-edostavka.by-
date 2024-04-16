@@ -38,11 +38,19 @@ public partial class ProductsPage : Page
 
     async Task InitializeLists()//Инициализация списков (Оптимизировано)
     {
-        uniqueCategories = await SQLScripts.GetAllCategories();
-        uniqueProducts = await SQLScripts.GetAllProducts();
-        uniqueAttributes = await SQLScripts.GetAllAttributes();
-        attributeValues = await SQLScripts.GetAllAttributeValues();
-        productPrices = await SQLScripts.GetAllPricesAsync();
+        var getAllCategoriesTask = SQLScripts.GetAllCategories();
+        var getAllProductsTask = SQLScripts.GetAllProducts();
+        var getAllAttributesTask = SQLScripts.GetAllAttributes();
+        var getAllAttributeValuesTask = SQLScripts.GetAllAttributeValues();
+        var getAllPricesTask = SQLScripts.GetAllPricesAsync();
+
+        await Task.WhenAll(getAllCategoriesTask, getAllProductsTask, getAllAttributesTask, getAllAttributeValuesTask, getAllPricesTask);
+
+        uniqueCategories = await getAllCategoriesTask;
+        uniqueProducts = await getAllProductsTask;
+        uniqueAttributes = await getAllAttributesTask;
+        attributeValues = await getAllAttributeValuesTask;
+        productPrices = await getAllPricesTask;
     }
     private void CreateAccordion(DateTime? pricesDate)//Создание аккордиона
     {
