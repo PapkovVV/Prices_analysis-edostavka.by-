@@ -149,35 +149,8 @@ public partial class DataPage : Page
             averagePrices = GetNeededObjects(averagePrices);//Отображение данных в соответствии с поиском
         }
 
-        List<DateTime> uniqueDates;
+        List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
-        if (startPrice != null && lastPrice != null)
-        {
-            uniqueDates = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate && x.Average_Price >= startPrice && x.Average_Price <= lastPrice)
-                .Select(x => x.AveragePriceDate)
-                .OrderBy(x => x).Distinct().TakeLast(7).ToList();
-        }
-        else if (startPrice != null && lastPrice == null)
-        {
-            uniqueDates = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate && x.Average_Price >= startPrice)
-        .Select(x => x.AveragePriceDate)
-        .OrderBy(x => x).Distinct().TakeLast(7).ToList();
-
-        }
-        else if (startPrice == null && lastPrice != null)
-        {
-            uniqueDates = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate && x.Average_Price <= lastPrice)
-.Select(x => x.AveragePriceDate)
-.OrderBy(x => x).Distinct().TakeLast(7).ToList();
-
-
-        }
-        else
-        {
-            uniqueDates = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate)
-.Select(x => x.AveragePriceDate)
-.OrderBy(x => x).Distinct().TakeLast(7).ToList();
-        }
         // Создайте DataTable и добавьте столбцы
         if (uniqueDates != null && uniqueDates.Count > 0)
         {
@@ -286,6 +259,7 @@ public partial class DataPage : Page
     }
 
     #region Все для генерации DataGrid с необходимыми данными
+
     private async Task<List<string>> GetNeededCategories()//Получение необходимых категорий для отображения (Оптимизировано)
     {
         var allCategories = await SQLScripts.GetAllCategories();
@@ -297,7 +271,7 @@ public partial class DataPage : Page
         }
         return allCategories.Select(x => x.Name).OrderBy(x => x).Distinct().ToList();
     }
-    private List<T> GetNeededObjects<T>(List<T> dataList)
+    private List<T> GetNeededObjects<T>(List<T> dataList)//Получение списка объектов в соответствии с поиском (Оптимизировано)
     {
         List<T> result = new List<T>();//Список результата
 
@@ -320,13 +294,7 @@ public partial class DataPage : Page
 
         return result;
     }
-
-    #endregion Все для генерации DataGrid с необходимыми данными
-
-
-
-
-    void SeTDataGrid()//Генерация таблицы для отображения необходимых данных
+    void SeTDataGrid()//Генерация таблицы для отображения необходимых данных(Оптимизировано)
     {
         dataGrid.ItemsSource = dataTable.DefaultView;
         foreach (var column in dataGrid.Columns)
@@ -356,6 +324,36 @@ public partial class DataPage : Page
             }
         }
     }
+
+    #endregion Все для генерации DataGrid с необходимыми данными
+
+    #region Фильтры
+
+    private List<DateTime> AveragePricesPriceFilter(List<AveragePrice> averagePrices)//Фильтр данных по необходимым средним ценам (Оптимизировано)
+    {
+        var query = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate);
+
+        if (startPrice != null)
+        {
+            query = query.Where(x => x.Average_Price >= startPrice);
+        }
+
+        if (lastPrice != null)
+        {
+            query = query.Where(x => x.Average_Price <= lastPrice);
+        }
+
+        return query
+            .Select(x => x.AveragePriceDate)
+            .OrderBy(x => x)
+            .Distinct()
+            .TakeLast(7)
+            .ToList();
+    }
+
+    #endregion Фильтры
+
+
 
     static string RemoveNonNumeric(string input)
     {
