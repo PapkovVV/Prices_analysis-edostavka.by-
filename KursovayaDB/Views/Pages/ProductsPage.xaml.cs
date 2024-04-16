@@ -78,7 +78,7 @@ public partial class ProductsPage : Page
         }
     }
 
-    private List<SimpleAccordionItem> CreateProductsAccordionItems(int categoryId)
+    private List<SimpleAccordionItem> CreateProductsAccordionItems(int categoryId)//Создание списка продуктов для определенной категории
     {
         pricesDate = pricesDate ?? DateTime.Now.Date;
         List<SimpleAccordionItem> products = new List<SimpleAccordionItem>();//Список элементов продуктов
