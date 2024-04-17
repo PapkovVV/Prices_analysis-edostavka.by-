@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KursovayaDB.Views.Pages;
 
@@ -75,10 +76,7 @@ public partial class DataPage : Page
             dataTable.Columns.Add("Категория", typeof(string));
             foreach (var priceInd in distinctPriceIndexes)
             {
-                var dateFrom = RemoveNonNumeric(priceInd.IndexDateFrom.ToShortDateString()).Split(".");
-                var dateTo = RemoveNonNumeric(priceInd.IndexDateTo.ToShortDateString()).Split(".");
-                var header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -" +
-                    $" {dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+                var header = GetHeaderName(priceInd.IndexDateFrom, priceInd.IndexDateTo);
                 dataTable.Columns.Add(header, typeof(decimal));
             }
 
@@ -89,10 +87,7 @@ public partial class DataPage : Page
 
             foreach (var priceInd in distinctPriceIndexes)
             {
-                var dateFrom = RemoveNonNumeric(priceInd.IndexDateFrom.ToShortDateString()).Split(".");
-                var dateTo = RemoveNonNumeric(priceInd.IndexDateTo.ToShortDateString()).Split(".");
-                var header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -" +
-                    $" {dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+                var header = GetHeaderName(priceInd.IndexDateFrom, priceInd.IndexDateTo);
 
                 for (int i = 0; i < uniqueCategories.Count; i++)
                 {
@@ -199,8 +194,7 @@ public partial class DataPage : Page
 
             foreach (var date in uniqueDates)
             {
-                var dateMass = RemoveNonNumeric(date.ToShortDateString()).Split(".");
-                var header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
+                string header = GetHeaderName(date);
                 dataTable.Columns.Add(header, typeof(decimal));
             }
 
@@ -211,8 +205,7 @@ public partial class DataPage : Page
 
             foreach (var date in uniqueDates)
             {
-                var dateMass = RemoveNonNumeric(date.ToShortDateString()).Split(".");
-                var header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
+                string header = GetHeaderName(date);
                 for (int i = 0; i < uniqueCategories.Count; i++)
                 {
                     var categoryName = uniqueCategories.ElementAt(i);
@@ -310,19 +303,40 @@ public partial class DataPage : Page
             .Select(x => x.AveragePriceDate)
             .OrderBy(x => x)
             .Distinct()
-            .TakeLast(7)
+            .TakeLast(8)
             .ToList();
     }
 
     #endregion Фильтры
 
 
+    #region Работа со строковыми данными
 
     static string RemoveNonNumeric(string input)
     {
         string result = Regex.Replace(input, @"[^\d.]", "");
         return result;
     }
+
+    static string GetHeaderName(DateTime firstDate, DateTime? secondDate = null)//Получение названия столбца для DataGrid (Оптимизировано)
+    {
+        string header = string.Empty;
+        if (secondDate != null)
+        {
+            var dateFrom = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
+            var dateTo = RemoveNonNumeric(secondDate?.ToShortDateString()).Split(".");
+            header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -" +
+                    $" {dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+        }
+        else
+        {
+            var dateMass = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
+            header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
+        }
+        return header;
+    }
+
+    #endregion Работа со стрококвыми данными
 
     static string GetMonth(string monthNumber)
     {
