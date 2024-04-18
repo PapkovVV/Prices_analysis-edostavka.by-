@@ -1,7 +1,5 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -16,6 +14,7 @@ public class ExcelExport
     static int column = 1;
     public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, bool isNewFile)
     {
+        row = 1;
         string filePathExcel = isNewFile ? $@"ExportedFiles\Excel\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx" :
             $@"ExportedFiles\Excel\Exported{name}.xlsx";
         const string excelPath = @"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE";
@@ -62,6 +61,7 @@ public class ExcelExport
             else
             {
                 SetHeaderRow(worksheet, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
+                await SetRequiredAverageProductPrices(worksheet, columnHeaders);
             }
 
             worksheet.Columns().AdjustToContents();
@@ -70,7 +70,7 @@ public class ExcelExport
         }
     }
 
-    private static void SetFileTittle(IXLWorksheet worksheet,string title)//Установка заголовка файла (Оптимизировано)
+    private static void SetFileTittle(IXLWorksheet worksheet, string title)//Установка заголовка файла (Оптимизировано)
     {
         for (int i = 0; i < title.Split("\n").Count(); i++)
         {
@@ -117,7 +117,7 @@ public class ExcelExport
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
         var allProductPrices = await SQLScripts.GetAllPricesAsync();//Получаем все цены
 
-        var requiredDates = GetRequiredDates(dates);//Получаем необходимые даты
+        var requiredDates = GetRequiredDates(dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
 
         foreach (var category in allCategories)
         {
@@ -142,17 +142,60 @@ public class ExcelExport
             column = 1;
         }
     }
-
-
-
-    private static List<DateTime> GetRequiredDates(List<string> dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
+    private static async Task SetRequiredAverageProductPrices(IXLWorksheet worksheet, List<string> dates)
     {
-        List<DateTime> result = new List<DateTime>();
-        for (int i = 1; i < dates.Count; i++)
+        var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
+        var allAveragePrices = await SQLScripts.GetAveragePricesAsync();//Получаем все средние цены
+
+        List<DateTime> requiredDates = new List<DateTime>();
+
+        foreach (var date in dates.TakeLast(dates.Count - 1))
         {
-            result.Add(DateTime.ParseExact(dates.ElementAt(i), "dd MMMM yyyy", CultureInfo.GetCultureInfo("ru-RU")));
+            foreach (var reqDate in GetRequiredDates(date.Replace("Период: ", "").Split('-')))
+            {
+                requiredDates.Add(reqDate);
+            }
         }
-        return result;
+
+        int dataRow = row;
+        MessageBox.Show(requiredDates.Count + "");
+        column = 2;
+
+        int counter = 1;
+        foreach (var date in requiredDates)
+        {
+            row = dataRow;
+            SetCellValues(worksheet, date.ToShortDateString());
+            foreach (var category in allCategories)
+            {
+                var requiredAveragePrice = allAveragePrices.FirstOrDefault(x => x.CategoryId == category.Id && x.AveragePriceDate.Equals(date))!.Average_Price;
+                SetCellValues(worksheet, $"{category.Name}: {requiredAveragePrice}");
+            }
+            counter++;
+            column++;
+        }
+        row+=3;
+        column = 1;
+    }
+
+
+    private static List<DateTime> GetRequiredDates(params string[] dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
+    {
+        try
+        {
+            List<DateTime> result = new List<DateTime>();
+            for (int i = 0; i < dates.Length; i++)
+            {
+                var date = dates[i].Trim();
+                result.Add(DateTime.ParseExact(date, "dd MMMM yyyy", CultureInfo.CurrentCulture));
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+        return new List<DateTime>() { DateTime.Now.Date };
     }
 
     public static void OpenFile(string filePath, string programmPath) //Открытие файла(Optimized)

@@ -312,7 +312,7 @@ public partial class DataPage : Page
             .Select(x => x.AveragePriceDate)
             .OrderBy(x => x)
             .Distinct()
-            .TakeLast(8)
+            .TakeLast(7)
             .ToList();
     }
 
