@@ -1,6 +1,6 @@
-﻿using KursovayaDB.DataBaseServices;
+﻿using PriceAnalysis.DataBaseServices;
 
-namespace KursovayaDB.Models;
+namespace PriceAnalysis.Models;
 
 public class AveragePrice
 {

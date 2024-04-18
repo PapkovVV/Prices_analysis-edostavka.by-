@@ -1,11 +1,11 @@
 ﻿using HtmlAgilityPack;
-using KursovayaDB.Models;
-using KursovayaDB.Services.LogServices;
-using KursovayaDB.ViewModel;
+using PriceAnalysis.Models;
+using PriceAnalysis.Services.LogServices;
+using PriceAnalysis.ViewModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 
-namespace KursovayaDB.Services.ParsingServices;
+namespace PriceAnalysis.Services.ParsingServices;
 
 public class Parsing
 {

@@ -1,10 +1,10 @@
-﻿using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
-using KursovayaDB.Services.ParsingServices;
-using KursovayaDB.Services.ProductServices;
+﻿using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
+using PriceAnalysis.Services.ParsingServices;
+using PriceAnalysis.Services.ProductServices;
 using System.Windows;
 
-namespace KursovayaDB.Services.DataBaseServices;
+namespace PriceAnalysis.Services.DataBaseServices;
 
 public static class UpdateDB
 {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace KursovayaDB.Models;
+namespace PriceAnalysis.Models;
 
 public class Category
 {

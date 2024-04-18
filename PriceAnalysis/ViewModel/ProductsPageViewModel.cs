@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using KursovayaDB.DataBaseServices;
+using PriceAnalysis.DataBaseServices;
 
-namespace KursovayaDB.ViewModel;
+namespace PriceAnalysis.ViewModel;
 
 public partial class ProductsPageViewModel:ObservableObject
 {

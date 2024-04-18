@@ -1,9 +1,9 @@
 ﻿using FullControls.Controls;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.ViewModel;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.ViewModel;
 using System.Windows.Controls;
 
-namespace KursovayaDB.Views.Pages;
+namespace PriceAnalysis.Views.Pages;
 
 public partial class GraphicPage : Page
 {

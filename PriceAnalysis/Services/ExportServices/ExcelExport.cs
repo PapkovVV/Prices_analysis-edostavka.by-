@@ -1,17 +1,17 @@
 ﻿using ClosedXML.Excel;
-using KursovayaDB.DataBaseServices;
+using PriceAnalysis.DataBaseServices;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace KursovayaDB.Services.ExportServices;
+namespace PriceAnalysis.Services.ExportServices;
 
 public class ExcelExport
 {
     static int row = 1;//Строка
-    static int column = 1;
+    static int column = 1;//Столбец (ячейка)
     public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, bool isNewFile)
     {
         row = 1;

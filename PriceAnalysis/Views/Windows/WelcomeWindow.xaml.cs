@@ -1,7 +1,7 @@
 ﻿using FullControls.SystemComponents;
-using KursovayaDB.ViewModel;
+using PriceAnalysis.ViewModel;
 
-namespace KursovayaDB.Views;
+namespace PriceAnalysis.Views;
 
 public partial class WelcomeWindow : FullWindow
 {

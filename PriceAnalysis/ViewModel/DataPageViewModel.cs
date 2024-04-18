@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Services.ExportServices;
-using KursovayaDB.Views.Windows;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Services.ExportServices;
+using PriceAnalysis.Views.Windows;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace KursovayaDB.ViewModel;
+namespace PriceAnalysis.ViewModel;
 
 public partial class DataPageViewModel : ObservableObject
 {

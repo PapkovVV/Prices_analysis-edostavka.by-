@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace KursovayaDB
+namespace PriceAnalysis
 {
     /// <summary>
     /// Interaction logic for App.xaml

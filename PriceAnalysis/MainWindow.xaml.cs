@@ -1,7 +1,7 @@
-﻿using KursovayaDB.ViewModel;
+﻿using PriceAnalysis.ViewModel;
 using System.Windows;
 
-namespace KursovayaDB;
+namespace PriceAnalysis;
 
 public partial class MainWindow : Window
 {

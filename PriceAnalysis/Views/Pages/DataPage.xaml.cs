@@ -1,7 +1,7 @@
 ﻿using FullControls.Controls;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
-using KursovayaDB.ViewModel;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
+using PriceAnalysis.ViewModel;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
-namespace KursovayaDB.Views.Pages;
+namespace PriceAnalysis.Views.Pages;
 
 public partial class DataPage : Page
 {

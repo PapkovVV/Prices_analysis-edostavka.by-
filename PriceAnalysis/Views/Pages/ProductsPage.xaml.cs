@@ -1,14 +1,14 @@
 ﻿using FullControls.Controls;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
-using KursovayaDB.ViewModel;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
+using PriceAnalysis.ViewModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace KursovayaDB.Views.Pages;
+namespace PriceAnalysis.Views.Pages;
 public partial class ProductsPage : Page
 {
     private bool isUserClick = false;

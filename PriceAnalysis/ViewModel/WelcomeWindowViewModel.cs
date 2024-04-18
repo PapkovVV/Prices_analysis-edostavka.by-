@@ -1,13 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
-using KursovayaDB.Views.Pages;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
+using PriceAnalysis.Views.Pages;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace KursovayaDB.ViewModel;
+namespace PriceAnalysis.ViewModel;
 
 public partial class WelcomeWindowViewModel : ObservableObject
 {

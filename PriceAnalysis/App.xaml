@@ -1,7 +1,7 @@
-﻿<Application x:Class="KursovayaDB.App"
+﻿<Application x:Class="PriceAnalysis.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:KursovayaDB"
+             xmlns:local="clr-namespace:PriceAnalysis"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 

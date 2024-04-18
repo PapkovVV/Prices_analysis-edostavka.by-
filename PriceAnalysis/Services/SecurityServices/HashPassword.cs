@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace KursovayaDB.Services.SecurityServices;
+namespace PriceAnalysis.Services.SecurityServices;
 
 public class HashPassword
 {

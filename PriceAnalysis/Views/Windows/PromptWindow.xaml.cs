@@ -1,7 +1,7 @@
 ﻿using FullControls.SystemComponents;
 using System.Windows;
 
-namespace KursovayaDB.Views.Windows;
+namespace PriceAnalysis.Views.Windows;
 
 public partial class PromptWindow : FlexWindow
 {

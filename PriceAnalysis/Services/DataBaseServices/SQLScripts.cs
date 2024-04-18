@@ -1,10 +1,10 @@
-﻿using KursovayaDB.Models;
-using KursovayaDB.Services.LogServices;
+﻿using PriceAnalysis.Models;
+using PriceAnalysis.Services.LogServices;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 
-namespace KursovayaDB.DataBaseServices;
+namespace PriceAnalysis.DataBaseServices;
 
 public static class SQLScripts
 {

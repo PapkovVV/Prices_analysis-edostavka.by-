@@ -1,4 +1,4 @@
-﻿namespace KursovayaDB.Services.ProductServices;
+﻿namespace PriceAnalysis.Services.ProductServices;
 
 public class ForAllProducts
 {

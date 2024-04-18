@@ -1,14 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FullControls.Controls;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Models;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
 using LiveCharts;
 using LiveCharts.Wpf;
 using System.Collections.ObjectModel;
 using System.Windows;
 
-namespace KursovayaDB.ViewModel;
+namespace PriceAnalysis.ViewModel;
 
 public partial class GraphicPageViewModel : ObservableObject
 {

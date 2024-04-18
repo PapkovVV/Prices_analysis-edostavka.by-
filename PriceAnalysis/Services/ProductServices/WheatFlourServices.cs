@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace KursovayaDB.Services.ProductServices;
+namespace PriceAnalysis.Services.ProductServices;
 
 public class WheatFlourServices
 {

@@ -2,14 +2,14 @@
 using CommunityToolkit.Mvvm.Input;
 using FullControls.Controls;
 using FullControls.SystemComponents;
-using KursovayaDB.DataBaseServices;
-using KursovayaDB.Services.DataBaseServices;
-using KursovayaDB.Services.LogServices;
-using KursovayaDB.Services.ParsingServices;
-using KursovayaDB.Services.SecurityServices;
-using KursovayaDB.Views;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Services.DataBaseServices;
+using PriceAnalysis.Services.LogServices;
+using PriceAnalysis.Services.ParsingServices;
+using PriceAnalysis.Services.SecurityServices;
+using PriceAnalysis.Views;
 using System.Windows;
-namespace KursovayaDB.ViewModel;
+namespace PriceAnalysis.ViewModel;
 
 public partial class MainViewModel : ObservableObject
 {

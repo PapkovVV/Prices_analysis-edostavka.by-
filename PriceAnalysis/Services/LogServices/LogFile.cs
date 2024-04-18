@@ -1,7 +1,7 @@
-﻿using KursovayaDB.ViewModel;
+﻿using PriceAnalysis.ViewModel;
 using System.IO;
 
-namespace KursovayaDB.Services.LogServices;
+namespace PriceAnalysis.Services.LogServices;
 
 public class LogFile
 {

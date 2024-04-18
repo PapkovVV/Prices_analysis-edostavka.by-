@@ -1,4 +1,4 @@
-﻿using KursovayaDB.DataBaseServices;
+﻿using PriceAnalysis.DataBaseServices;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using Xceed.Words.NET;
 using Alignment = Xceed.Document.NET.Alignment;
 
-namespace KursovayaDB.Services.ExportServices;
+namespace PriceAnalysis.Services.ExportServices;
 
 public class WordExport
 {
