@@ -1,8 +1,10 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using KursovayaDB.DataBaseServices;
 using KursovayaDB.Models;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,7 +12,9 @@ namespace KursovayaDB.Services.ExportServices;
 
 public class ExcelExport
 {
-    public static void ExcelImportAndOpen(DataGrid dataGrid, string name, string title, bool isNewFile)
+    static int row = 1;//Строка
+    static int column = 1;
+    public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, bool isNewFile)
     {
         string filePathExcel = isNewFile ? $@"ExportedFiles\Excel\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx" :
             $@"ExportedFiles\Excel\Exported{name}.xlsx";
@@ -48,38 +52,33 @@ public class ExcelExport
             var worksheet = workbook.Worksheets.Add(sheetName);
 
             SetFileTittle(worksheet, title);//Устанавливаем заголовок файла
-            SetHeaderRow(worksheet, 6, "", columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
-            int emptyRow = SetCellValues(worksheet, cellValues);//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
+            SetHeaderRow(worksheet, "", columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
+            SetCellValues(worksheet, cellValues.ToArray());//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
             if (name.Equals("AveragePrices"))
             {
-                SetHeaderRow(worksheet, emptyRow, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
+                SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
+                await SetRequiredProductPrices(worksheet, columnHeaders);
             }
             else
             {
-                SetHeaderRow(worksheet, emptyRow, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
+                SetHeaderRow(worksheet, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
             }
 
-
-
             worksheet.Columns().AdjustToContents();
-
             workbook.SaveAs(filePathExcel);
-
             OpenFile(filePathExcel, excelPath);
         }
-
     }
 
     private static void SetFileTittle(IXLWorksheet worksheet,string title)//Установка заголовка файла (Оптимизировано)
     {
         for (int i = 0; i < title.Split("\n").Count(); i++)
         {
-            SetHeaderRow(worksheet, i + 1, "", title.Split("\n")[i].Trim());
+            SetHeaderRow(worksheet, "", title.Split("\n")[i].Trim());
         }
     }
-    private static void SetHeaderRow(IXLWorksheet worksheet, int row, string requiredHeader = "", params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
+    private static void SetHeaderRow(IXLWorksheet worksheet, string requiredHeader = "", params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
     {
-        
         if (headers.Length > 0)
         {
             for (int i = 0; i < headers.Length; i++)
@@ -95,11 +94,11 @@ public class ExcelExport
             worksheet.Cell(row, 1).Style.Font.SetBold(true);
             worksheet.Cell(row, 1).Style.Font.SetFontSize(16);
         }
+        ++row;
     }
-    private static int SetCellValues(IXLWorksheet worksheet, List<string> cellValues)//Заполнение ячеек данными(Оптимизировано)
+    private static void SetCellValues(IXLWorksheet worksheet, params string[] cellValues)//Заполнение ячеек данными(Оптимизировано)
     {
-        int row = 7;
-        int cell = 1;
+        int cell = column;
         foreach (var cellValue in cellValues)
         {
             if (cellValue.Equals("end"))
@@ -110,9 +109,51 @@ public class ExcelExport
             worksheet.Cell(row, cell).Value = cellValue;
             cell++;
         }
-        return row + 2;
+        row++;
+    }
+    private static async Task SetRequiredProductPrices(IXLWorksheet worksheet, List<string> dates)//Дополнительная информация о продуктах для средних цен(Оптимизировано)
+    {
+        var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
+        var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
+        var allProductPrices = await SQLScripts.GetAllPricesAsync();//Получаем все цены
+
+        var requiredDates = GetRequiredDates(dates);//Получаем необходимые даты
+
+        foreach (var category in allCategories)
+        {
+            SetHeaderRow(worksheet, category.Name);//Установка названия категории
+            SetCellValues(worksheet, dates.TakeLast(dates.Count - 1).ToArray());
+            int dataRow = row;
+            var requiredProducts = allProducts.Where(x => x.CategoryId == category.Id);
+            foreach (var date in requiredDates)
+            {
+                row = dataRow;
+                var requiredPrices = allProductPrices.Where(x => x.PriceDate.Equals(date) &&
+                                                    requiredProducts.Select(x => x.Article).Contains(x.ProductId)).Distinct().OrderBy(x => x.Price);//Получаем необходимые цены
+
+                foreach (var price in requiredPrices)
+                {
+                    var productName = requiredProducts.FirstOrDefault(x => x.Article.Equals(price.ProductId))!.Name;
+                    SetCellValues(worksheet, $"{productName}:\t\t{price.Price} бел. руб.");
+                }
+                column++;
+            }
+            row+=3;
+            column = 1;
+        }
     }
 
+
+
+    private static List<DateTime> GetRequiredDates(List<string> dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
+    {
+        List<DateTime> result = new List<DateTime>();
+        for (int i = 1; i < dates.Count; i++)
+        {
+            result.Add(DateTime.ParseExact(dates.ElementAt(i), "dd MMMM yyyy", CultureInfo.GetCultureInfo("ru-RU")));
+        }
+        return result;
+    }
 
     public static void OpenFile(string filePath, string programmPath) //Открытие файла(Optimized)
     {

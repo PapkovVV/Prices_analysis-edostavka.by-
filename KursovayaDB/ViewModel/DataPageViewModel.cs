@@ -57,11 +57,11 @@ public partial class DataPageViewModel : ObservableObject
         {
             if (parameter.Equals("Цены"))
             {
-                ExcelExport.ExcelImportAndOpen(DataGrid, "AveragePrices", PageTitle, result);
+                ExcelExport.ExcelImportAndOpenAsync(DataGrid, "AveragePrices", PageTitle, result);
             }
             else
             {
-                ExcelExport.ExcelImportAndOpen(DataGrid, "PriceIndexes", PageTitle, result);
+                ExcelExport.ExcelImportAndOpenAsync(DataGrid, "PriceIndexes", PageTitle, result);
             }
         }
     }
