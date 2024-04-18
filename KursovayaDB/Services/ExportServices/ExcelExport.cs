@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using KursovayaDB.Models;
 using System.Data;
 using System.Diagnostics;
 using System.Windows;
@@ -47,8 +48,16 @@ public class ExcelExport
             var worksheet = workbook.Worksheets.Add(sheetName);
 
             SetFileTittle(worksheet, title);//Устанавливаем заголовок файла
-            SetHeaderRow(worksheet, 6, columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
-            SetCellValues(worksheet, cellValues);//Значения для ячеек средних цен/индексов
+            SetHeaderRow(worksheet, 6, "", columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
+            int emptyRow = SetCellValues(worksheet, cellValues);//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
+            if (name.Equals("AveragePrices"))
+            {
+                SetHeaderRow(worksheet, emptyRow, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
+            }
+            else
+            {
+                SetHeaderRow(worksheet, emptyRow, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
+            }
 
 
 
@@ -65,19 +74,29 @@ public class ExcelExport
     {
         for (int i = 0; i < title.Split("\n").Count(); i++)
         {
-            SetHeaderRow(worksheet, i + 1, title.Split("\n")[i].Trim());
+            SetHeaderRow(worksheet, i + 1, "", title.Split("\n")[i].Trim());
         }
     }
-    private static void SetHeaderRow(IXLWorksheet worksheet, int row, params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
+    private static void SetHeaderRow(IXLWorksheet worksheet, int row, string requiredHeader = "", params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
     {
-        for (int i = 0; i < headers.Length; i++)
+        
+        if (headers.Length > 0)
         {
-            worksheet.Cell(row, i + 1).Value = headers[i];
-            worksheet.Cell(row, i + 1).Style.Font.SetBold(true);
-            worksheet.Cell(row, i + 1).Style.Font.SetFontSize(16);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cell(row, i + 1).Value = headers[i];
+                worksheet.Cell(row, i + 1).Style.Font.SetBold(true);
+                worksheet.Cell(row, i + 1).Style.Font.SetFontSize(16);
+            }
+        }
+        else
+        {
+            worksheet.Cell(row, 1).Value = requiredHeader;
+            worksheet.Cell(row, 1).Style.Font.SetBold(true);
+            worksheet.Cell(row, 1).Style.Font.SetFontSize(16);
         }
     }
-    private static void SetCellValues(IXLWorksheet worksheet, List<string> cellValues)//Заполнение ячеек данными(Оптимизировано)
+    private static int SetCellValues(IXLWorksheet worksheet, List<string> cellValues)//Заполнение ячеек данными(Оптимизировано)
     {
         int row = 7;
         int cell = 1;
@@ -91,6 +110,7 @@ public class ExcelExport
             worksheet.Cell(row, cell).Value = cellValue;
             cell++;
         }
+        return row + 2;
     }
 
 
