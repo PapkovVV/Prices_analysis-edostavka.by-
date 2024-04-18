@@ -29,15 +29,15 @@ public partial class DataPageViewModel : ObservableObject
     {
         if (parameter.Equals("Цены"))
         {
-            PageTitle = "СРЕДНИЕ  ЦЕНЫ  НА  ТОВАРЫ, РЕАЛИЗУЕМЫЕ В РОЗНИЧНОЙ СЕТИ\n" +
-            "(на торговой плозадке Евроопт)\n" +
+            PageTitle = "ОТЧЕТ ПО СРЕДНИМ  ЦЕНАМ  НА  ТОВАРЫ, РЕАЛИЗУЕМЫМ В РОЗНИЧНОЙ СЕТИ\n" +
+            "(на торговой площадке Евроопт)\n" +
             "(в рублях за килограмм, литр, десяток, изделие)\n";
             PriceLabelVisibility = Visibility.Visible;
             PricesStackVisibility = Visibility.Visible;
         }
         else
         {
-            PageTitle = "ИНДЕКСЫ  ПОТРЕБИТЕЛЬСКИХ ЦЕН\n";
+            PageTitle = "ОТЧЕТ ПО ИНДЕКСАМ ПОТРЕБИТЕЛЬСКИХ ЦЕН\n";
             PriceLabelVisibility = Visibility.Collapsed;
             PricesStackVisibility = Visibility.Collapsed;
         }

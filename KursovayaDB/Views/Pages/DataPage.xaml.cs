@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Windows.Media;
 
 namespace KursovayaDB.Views.Pages;
 
@@ -124,13 +124,12 @@ public partial class DataPage : Page
 
             dataTable = filteredDataTable;
 
-            SeTDataGrid();
         }
         else
         {
-            dataTable = new DataTable();
             dataGrid.Columns.Clear();
         }
+        SeTDataGrid();
     }
 
     async void GenerateAveragePricesDataGrid()//Генерация средних цен DataGrid
@@ -249,6 +248,7 @@ public partial class DataPage : Page
             dataGrid.Columns.Clear();
         }
         SeTDataGrid();
+        //SetRequiredValueColor();
     }
     void SeTDataGrid()//Генерация таблицы для отображения необходимых данных(Оптимизировано)
     {
@@ -256,6 +256,7 @@ public partial class DataPage : Page
         foreach (var column in dataGrid.Columns)
         {
             column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
+            column.MinWidth = 150;
         }
 
         for (int i = 1; i < dataGrid.Columns.Count; i++)
@@ -265,21 +266,29 @@ public partial class DataPage : Page
             {
                 textColumn.ElementStyle = new Style(typeof(TextBlock))
                 {
-                    Setters =
-            {
-                new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right)
-            }
+                    Setters = { new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right) }
                 };
                 column.HeaderStyle = new Style(typeof(DataGridColumnHeader))
                 {
-                    Setters =
-            {
-                new Setter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Right)
-            }
+                    Setters = { new Setter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Right) }
                 };
             }
         }
+
     }
+
+    /*private void SetRequiredValueColor()
+    {
+        foreach (DataRowView row in dataGrid.Items)
+        {
+            for (int i = 1; i < dataGrid.Columns.Count - 1; i+=2)
+            {
+                decimal price1 = Decimal.Parse(row.Row.ItemArray[i].ToString());
+                decimal price2 = Decimal.Parse(row.Row.ItemArray[i + 1].ToString());
+                
+            }
+        }
+    }*/
 
     #endregion Все для генерации DataGrid с необходимыми данными
 
@@ -309,7 +318,6 @@ public partial class DataPage : Page
 
     #endregion Фильтры
 
-
     #region Работа со строковыми данными
 
     static string RemoveNonNumeric(string input)
@@ -317,7 +325,6 @@ public partial class DataPage : Page
         string result = Regex.Replace(input, @"[^\d.]", "");
         return result;
     }
-
     static string GetHeaderName(DateTime firstDate, DateTime? secondDate = null)//Получение названия столбца для DataGrid (Оптимизировано)
     {
         string header = string.Empty;
@@ -335,10 +342,7 @@ public partial class DataPage : Page
         }
         return header;
     }
-
-    #endregion Работа со стрококвыми данными
-
-    static string GetMonth(string monthNumber)
+    static string GetMonth(string monthNumber)//Получение названия месяца(Оптимизировано)
     {
         switch (monthNumber)
         {
@@ -358,16 +362,17 @@ public partial class DataPage : Page
         }
     }
 
+    #endregion Работа со стрококвыми данными
+
+    #region События
     private void LastDatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
     {
         lastDate = lastDatePicker.SelectedDate;
     }
-
     private void startDatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
     {
         startDate = startDatePicker.SelectedDate;
     }
-
     private void ButtonPlus_Click(object sender, RoutedEventArgs e)
     {
         if (startDatePicker.SelectedDate <= lastDatePicker.SelectedDate)
@@ -394,7 +399,6 @@ public partial class DataPage : Page
 
         }
     }
-
     private void categoriesCombo_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (parameter.Equals("Цены"))
@@ -404,7 +408,6 @@ public partial class DataPage : Page
         }
         else GeneratePriceIndexesDataGrid();
     }
-
     private void startPriceTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (Decimal.TryParse(startPriceTextBox.Text.Replace(".", ","), out decimal price))
@@ -416,7 +419,6 @@ public partial class DataPage : Page
             startPrice = null;
         }
     }
-
     private void lastPriceTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (Decimal.TryParse(lastPriceTextBox.Text.Replace(".", ","), out decimal price))
@@ -428,7 +430,6 @@ public partial class DataPage : Page
             lastPrice = null;
         }
     }
-
     private void TextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
     {
         if (!char.IsDigit(e.Text, 0) && e.Text != ",")
@@ -437,4 +438,6 @@ public partial class DataPage : Page
             e.Handled = true;
         }
     }
+
+    #endregion События
 }

@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System.Data;
 using System.Diagnostics;
 using System.Windows;
@@ -25,13 +26,12 @@ public class ExcelExport
             }
         }
 
-        List<string> cellValues = new List<string>();//Названия столбцов
+        List<string> cellValues = new List<string>();
 
         foreach (var item in dataGrid.Items)
         {
             if (item is DataRowView row)
             {
-
                 foreach (var cellValue in row.Row.ItemArray)
                 {
                     cellValues.Add(cellValue.ToString());
@@ -45,27 +45,13 @@ public class ExcelExport
         using (var workbook = new XLWorkbook())
         {
             var worksheet = workbook.Worksheets.Add(sheetName);
-            for (int i = 0; i < title.Split("\n").Count(); i++)
-            {
-                SetHeaderRow(worksheet, i + 1, title.Split("\n")[i].Trim());
-            }
+
+            SetFileTittle(worksheet, title);//Устанавливаем заголовок файла
+            SetHeaderRow(worksheet, 6, columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
+            SetCellValues(worksheet, cellValues);//Значения для ячеек средних цен/индексов
 
 
-            SetHeaderRow(worksheet, 6, columnHeaders.ToArray());
 
-            int row = 7;
-            int cell = 1;
-            foreach (var cellValue in cellValues)
-            {
-                if (cellValue.Equals("end"))
-                {
-                    row++; cell = 1;
-                    continue;
-                }
-                worksheet.Cell(row, cell).Value = cellValue;
-                cell++;
-            }
-            
             worksheet.Columns().AdjustToContents();
 
             workbook.SaveAs(filePathExcel);
@@ -75,6 +61,13 @@ public class ExcelExport
 
     }
 
+    private static void SetFileTittle(IXLWorksheet worksheet,string title)//Установка заголовка файла (Оптимизировано)
+    {
+        for (int i = 0; i < title.Split("\n").Count(); i++)
+        {
+            SetHeaderRow(worksheet, i + 1, title.Split("\n")[i].Trim());
+        }
+    }
     private static void SetHeaderRow(IXLWorksheet worksheet, int row, params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
     {
         for (int i = 0; i < headers.Length; i++)
@@ -84,6 +77,23 @@ public class ExcelExport
             worksheet.Cell(row, i + 1).Style.Font.SetFontSize(16);
         }
     }
+    private static void SetCellValues(IXLWorksheet worksheet, List<string> cellValues)//Заполнение ячеек данными(Оптимизировано)
+    {
+        int row = 7;
+        int cell = 1;
+        foreach (var cellValue in cellValues)
+        {
+            if (cellValue.Equals("end"))
+            {
+                row++; cell = 1;
+                continue;
+            }
+            worksheet.Cell(row, cell).Value = cellValue;
+            cell++;
+        }
+    }
+
+
     public static void OpenFile(string filePath, string programmPath) //Открытие файла(Optimized)
     {
         try
