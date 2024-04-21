@@ -55,6 +55,7 @@ public class ExcelExport
             SetCellValues(worksheet, false, cellValues.ToArray());//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
             if (name.Equals("AveragePrices"))
             {
+                column = 2;
                 SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
                 await SetRequiredProductPrices(worksheet, columnHeaders);
             }
@@ -92,6 +93,7 @@ public class ExcelExport
             }
             else
             {
+                cell = worksheet.Cell(row, column);
                 cell.Value = requiredHeader;
             }
             cell.Style.Font.SetBold(true)
@@ -152,7 +154,7 @@ public class ExcelExport
                 column++;
             }
             row+=3;
-            column = 1;
+            column = 2;
         }
     }
     private static async Task SetRequiredAverageProductPrices(IXLWorksheet worksheet, List<string> dates)
