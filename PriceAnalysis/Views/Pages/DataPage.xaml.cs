@@ -132,7 +132,7 @@ public partial class DataPage : Page
         SeTDataGrid();
     }
 
-    async void GenerateAveragePricesDataGrid()//Генерация средних цен DataGrid
+    async void GenerateAveragePricesDataGrid()//Генерация средних цен DataGrid(Оптимизировано)
     {
         var averagePrices = await SQLScripts.GetAveragePricesAsync();
 
@@ -145,7 +145,8 @@ public partial class DataPage : Page
 
         List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
-        GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);
+        GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);//Генерация основы для отображения данных
+        SeTDataGrid();// Генерация таблицы для отображения данных
     }
 
     #region Все для генерации DataGrid с необходимыми данными
@@ -247,8 +248,6 @@ public partial class DataPage : Page
         {
             dataGrid.Columns.Clear();
         }
-        SeTDataGrid();
-        //SetRequiredValueColor();
     }
     void SeTDataGrid()//Генерация таблицы для отображения необходимых данных(Оптимизировано)
     {
@@ -276,19 +275,6 @@ public partial class DataPage : Page
         }
 
     }
-
-    /*private void SetRequiredValueColor()
-    {
-        foreach (DataRowView row in dataGrid.Items)
-        {
-            for (int i = 1; i < dataGrid.Columns.Count - 1; i+=2)
-            {
-                decimal price1 = Decimal.Parse(row.Row.ItemArray[i].ToString());
-                decimal price2 = Decimal.Parse(row.Row.ItemArray[i + 1].ToString());
-                
-            }
-        }
-    }*/
 
     #endregion Все для генерации DataGrid с необходимыми данными
 

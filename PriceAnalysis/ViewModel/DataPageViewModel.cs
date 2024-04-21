@@ -31,13 +31,13 @@ public partial class DataPageViewModel : ObservableObject
         {
             PageTitle = "ОТЧЕТ ПО СРЕДНИМ  ЦЕНАМ  НА  ТОВАРЫ, РЕАЛИЗУЕМЫМ В РОЗНИЧНОЙ СЕТИ\n" +
             "(на торговой площадке Евроопт)\n" +
-            "(в рублях за килограмм, литр, десяток, изделие)\n";
+            "(в рублях за килограмм, литр, десяток, изделие)";
             PriceLabelVisibility = Visibility.Visible;
             PricesStackVisibility = Visibility.Visible;
         }
         else
         {
-            PageTitle = "ОТЧЕТ ПО ИНДЕКСАМ ПОТРЕБИТЕЛЬСКИХ ЦЕН\n";
+            PageTitle = "ОТЧЕТ ПО ИНДЕКСАМ ПОТРЕБИТЕЛЬСКИХ ЦЕН";
             PriceLabelVisibility = Visibility.Collapsed;
             PricesStackVisibility = Visibility.Collapsed;
         }

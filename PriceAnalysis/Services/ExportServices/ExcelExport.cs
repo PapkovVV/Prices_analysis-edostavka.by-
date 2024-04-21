@@ -51,8 +51,8 @@ public class ExcelExport
             var worksheet = workbook.Worksheets.Add(sheetName);
 
             SetFileTittle(worksheet, title);//Устанавливаем заголовок файла
-            SetHeaderRow(worksheet, "", columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
-            SetCellValues(worksheet, cellValues.ToArray());//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
+            SetHeaderRow(worksheet, "", false, columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
+            SetCellValues(worksheet, false, cellValues.ToArray());//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
             if (name.Equals("AveragePrices"))
             {
                 SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
@@ -74,29 +74,37 @@ public class ExcelExport
     {
         for (int i = 0; i < title.Split("\n").Count(); i++)
         {
-            SetHeaderRow(worksheet, "", title.Split("\n")[i].Trim());
+            SetHeaderRow(worksheet, "", true, title.Split("\n")[i].Trim());
         }
+        row++;
     }
-    private static void SetHeaderRow(IXLWorksheet worksheet, string requiredHeader = "", params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
+    private static void SetHeaderRow(IXLWorksheet worksheet, string requiredHeader = "", bool isTitle = false, params string[] headers)//Заполнение названий столбцов EXCEL(Optimized)
     {
-        if (headers.Length > 0)
+        int columnCount = headers.Length > 0 ? headers.Length : 1;
+
+        for (int i = 0; i < columnCount; i++)
         {
-            for (int i = 0; i < headers.Length; i++)
+            var cell = worksheet.Cell(row, i + 1);
+
+            if (headers.Length > 0)
             {
-                worksheet.Cell(row, i + 1).Value = headers[i];
-                worksheet.Cell(row, i + 1).Style.Font.SetBold(true);
-                worksheet.Cell(row, i + 1).Style.Font.SetFontSize(16);
+                cell.Value = headers[i];
             }
-        }
-        else
-        {
-            worksheet.Cell(row, 1).Value = requiredHeader;
-            worksheet.Cell(row, 1).Style.Font.SetBold(true);
-            worksheet.Cell(row, 1).Style.Font.SetFontSize(16);
+            else
+            {
+                cell.Value = requiredHeader;
+            }
+            cell.Style.Font.SetBold(true)
+                          .Font.SetFontSize(16);
+            if (!isTitle)
+            {
+                cell.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+            }
         }
         ++row;
     }
-    private static void SetCellValues(IXLWorksheet worksheet, params string[] cellValues)//Заполнение ячеек данными(Оптимизировано)
+
+    private static void SetCellValues(IXLWorksheet worksheet, bool areDates = false, params string[] cellValues)//Заполнение ячеек данными(Оптимизировано)
     {
         int cell = column;
         foreach (var cellValue in cellValues)
@@ -106,7 +114,12 @@ public class ExcelExport
                 row++; cell = 1;
                 continue;
             }
+            if (areDates)
+            {
+                worksheet.Cell(row, cell).Style.Font.SetFontSize(15);
+            }
             worksheet.Cell(row, cell).Value = cellValue;
+            worksheet.Cell(row, cell).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             cell++;
         }
         row++;
@@ -122,7 +135,7 @@ public class ExcelExport
         foreach (var category in allCategories)
         {
             SetHeaderRow(worksheet, category.Name);//Установка названия категории
-            SetCellValues(worksheet, dates.TakeLast(dates.Count - 1).ToArray());
+            SetCellValues(worksheet, true, dates.TakeLast(dates.Count - 1).ToArray());
             int dataRow = row;
             var requiredProducts = allProducts.Where(x => x.CategoryId == category.Id);
             foreach (var date in requiredDates)
@@ -134,7 +147,7 @@ public class ExcelExport
                 foreach (var price in requiredPrices)
                 {
                     var productName = requiredProducts.FirstOrDefault(x => x.Article.Equals(price.ProductId))!.Name;
-                    SetCellValues(worksheet, $"{productName}:\t\t{price.Price} бел. руб.");
+                    SetCellValues(worksheet, false, $"{productName}:\t\t{price.Price} бел. руб.");
                 }
                 column++;
             }
@@ -158,18 +171,15 @@ public class ExcelExport
         }
 
         int dataRow = row;
-        MessageBox.Show(requiredDates.Count + "");
-        column = 2;
-
         int counter = 1;
         foreach (var date in requiredDates)
         {
             row = dataRow;
-            SetCellValues(worksheet, date.ToShortDateString());
+            SetCellValues(worksheet, true, date.ToShortDateString());
             foreach (var category in allCategories)
             {
                 var requiredAveragePrice = allAveragePrices.FirstOrDefault(x => x.CategoryId == category.Id && x.AveragePriceDate.Equals(date))!.Average_Price;
-                SetCellValues(worksheet, $"{category.Name}: {requiredAveragePrice}");
+                SetCellValues(worksheet, false, $"{category.Name}: {requiredAveragePrice}");
             }
             counter++;
             column++;
