@@ -3,12 +3,13 @@ using PriceAnalysis.DataBaseServices;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace PriceAnalysis.Services.ExportServices;
 
-public class ExcelExport
+public class ExcelExport:BaseExportClass
 {
     static int row = 1;//Строка
     static int column = 1;//Столбец (ячейка)
@@ -66,8 +67,16 @@ public class ExcelExport
             }
 
             worksheet.Columns().AdjustToContents();
-            workbook.SaveAs(filePathExcel);
-            OpenFile(filePathExcel, excelPath);
+
+            try
+            {
+                workbook.SaveAs(filePathExcel);
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Перед перезаписью сперва закройте файл.");
+            }
+            BaseExportClass.OpenFile(filePathExcel, excelPath);
         }
     }
 
@@ -189,37 +198,4 @@ public class ExcelExport
         row+=3;
         column = 1;
     }
-
-
-    private static List<DateTime> GetRequiredDates(params string[] dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
-    {
-        try
-        {
-            List<DateTime> result = new List<DateTime>();
-            for (int i = 0; i < dates.Length; i++)
-            {
-                var date = dates[i].Trim();
-                result.Add(DateTime.ParseExact(date, "dd MMMM yyyy", CultureInfo.CurrentCulture));
-            }
-            return result;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-        return new List<DateTime>() { DateTime.Now.Date };
-    }
-
-    public static void OpenFile(string filePath, string programmPath) //Открытие файла(Optimized)
-    {
-        try
-        {
-            Process.Start(programmPath, filePath);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-        }
-    }
-
 }

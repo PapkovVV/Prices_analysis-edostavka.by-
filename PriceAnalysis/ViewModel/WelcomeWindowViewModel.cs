@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PriceAnalysis.DataBaseServices;
-using PriceAnalysis.Models;
 using PriceAnalysis.Views.Pages;
 using System.Diagnostics;
 using System.Windows;

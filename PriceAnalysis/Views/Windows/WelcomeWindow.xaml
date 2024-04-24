@@ -22,7 +22,7 @@
                 <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Продукты" FontWeight="DemiBold"
                                  BackgroundOnHighlight="LightSkyBlue" BackgroundOnOpen="LightSkyBlue" 
                                  HasDropShadow="True" Command="{Binding GetProductsCommand}"/>
-                <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Средние цены на категорий продуктов" FontWeight="DemiBold"
+                <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Средние цены на категории продуктов" FontWeight="DemiBold"
                                  BackgroundOnHighlight="LightSkyBlue" BackgroundOnOpen="LightSkyBlue"
                                  HasDropShadow="True" Command="{Binding GetAveragePricesCommand}"/>
                 <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Индексы потребительских цен" FontWeight="DemiBold"
