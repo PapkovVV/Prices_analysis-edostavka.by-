@@ -1,4 +1,8 @@
-﻿using PriceAnalysis.DataBaseServices;
+﻿using ClosedXML.Excel;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Models;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -44,11 +48,11 @@ public class WordExport : BaseExportClass
             CreateDataTable(doc, filePathWord, dataGrid, columnHeaders, title, cellValues);
             if (name.Equals("AveragePrices"))
             {
-                await SetRequiredProductPricesAsync(doc, filePathWord, columnHeaders, "Информация о продуктах, используемых для расчета средних цен");
+                await SetRequiredProductPricesAsync(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен");
             }
             else
             {
-                //await CreateAdditionalDataTableAsync(filePathWord, dataGrid, "Информация о средних ценах, используемых для расчета индексов потребительских цен");
+                await SetRequiredAverageProductPrices(doc, columnHeaders, "Информация о средних ценах, используемых для расчета индексов потребительских цен");
             }
             try
             {
@@ -88,7 +92,9 @@ public class WordExport : BaseExportClass
 
         doc.InsertTable(table);
     }
-    private static async Task SetRequiredProductPricesAsync(DocX doc, string filePathWord, List<string> dates, string title)//Создание таблицы дополнительной информации
+
+    //Создание таблицы дополнительной информации средних цен
+    private static async Task SetRequiredProductPricesAsync(DocX doc, List<string> dates, string title)
     {
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
@@ -127,6 +133,48 @@ public class WordExport : BaseExportClass
                     newRow.Cells[1].Paragraphs.First().Append(productName).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
                     newRow.Cells[2].Paragraphs.First().Append(productPrice.ToString("0.00")).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
                 }
+            }
+            doc.InsertTable(table);
+            doc.InsertParagraph();
+            doc.InsertParagraph();
+        }
+    }
+    private static async Task SetRequiredAverageProductPrices(DocX doc, List<string> dates, string title)
+    {
+        var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
+        var allAveragePrices = await SQLScripts.GetAveragePricesAsync();//Получаем все средние цены
+
+        List<DateTime> requiredDates = new List<DateTime>();
+
+        foreach (var date in dates.TakeLast(dates.Count - 1))
+        {
+            foreach (var reqDate in GetRequiredDates(date.Replace("Период: ", "").Split('-')))
+            {
+                requiredDates.Add(reqDate);
+            }
+        }
+
+        doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
+        doc.InsertParagraph(title).FontSize(13).Font("Times New Roman").Alignment = Alignment.center;
+        doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
+
+
+        foreach (var date in requiredDates)
+        {
+            var table = doc.AddTable(1, 2);
+            table.Rows[0].MergeCells(0,1);
+            table.Rows[0].Cells[0].Paragraphs.First().Append(date.ToShortDateString()).Font("Times New Roman").FontSize(9).Bold().Alignment = Alignment.center;
+
+            foreach (var category in allCategories)
+            {
+                var newRow = table.InsertRow();
+
+                string requiredCategory = category.Name.ToString();//Категория
+                decimal requiredAveragePrice = allAveragePrices.
+                                               FirstOrDefault(x => x.CategoryId == category.Id && x.AveragePriceDate.Equals(date))!.Average_Price;//Средняя цена
+
+                newRow.Cells[0].Paragraphs.First().Append(requiredCategory).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
+                newRow.Cells[1].Paragraphs.First().Append(requiredAveragePrice.ToString("0.00")).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
             }
             doc.InsertTable(table);
             doc.InsertParagraph();
