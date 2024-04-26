@@ -35,7 +35,7 @@ public partial class GraphicPageViewModel : ObservableObject
         MinDate = StartPriceDate;
     }
 
-    async Task GetPricesList()
+    async Task GetPricesList()//Получение необходимых средних цен(Оптимизировано)
     {
         var allAveragePrices = await SQLScripts.GetAveragePricesAsync();
 
@@ -54,13 +54,14 @@ public partial class GraphicPageViewModel : ObservableObject
         }
     }
 
-    // Метод для форматирования значений оси Y
+    // Метод для форматирования значений оси Oy
     private string FormatAxisYLabel(double value)
     {
         return value.ToString("0.00");
     }
 
-    void SetData()// Установка значений для графика(Optimized)
+    // Установка значений для графика(Optimized)
+    void SetData()
     {
         if (averagePrices.Count > 0)
         {
@@ -80,13 +81,15 @@ public partial class GraphicPageViewModel : ObservableObject
         }
     }
 
+    //Установка дат на Оси Ox(Оптимизировано)
     void SetAxisXValues(List<AveragePrice> allAveragePrices)
     {
         DateLabels = new ObservableCollection<string> (allAveragePrices.Select(x => x.AveragePriceDate.ToShortDateString()).Distinct());
     }
 
+    //Получение графика после нажатия кнопки (Оптимизировано)
     [RelayCommand]
-    async void GetGraphic()
+    async Task GetGraphic()
     {
         if (StartPriceDate <= EndPriceDate)
         {

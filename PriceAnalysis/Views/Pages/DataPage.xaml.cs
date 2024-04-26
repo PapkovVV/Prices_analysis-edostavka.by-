@@ -42,6 +42,8 @@ public partial class DataPage : Page
             });
         }
 
+        await GenerateTimeLinesComboBox();
+
         if (parameter.Equals("Цены"))
         {
             GenerateAveragePricesDataGrid();
@@ -50,6 +52,19 @@ public partial class DataPage : Page
             GeneratePriceIndexesDataGrid();
     }
 
+    //Генерация комбобокса с временными разрезами(Оптимизировано)
+    private async Task GenerateTimeLinesComboBox()
+    {
+        string[] timeLines = { "День", "Неделя", "Месяц" };//Промежутки расчетов
+
+        foreach (var timeLine in timeLines)
+        {
+            timelineCombo.Items.Add(new ComboBoxItemPlus()
+            {
+                Content = timeLine
+            });
+        }
+    }
     async void GeneratePriceIndexesDataGrid()//Генерация Индексов DataGrid
     {
         var priceIndexes = await SQLScripts.GetAllPriceIndexes();
@@ -131,7 +146,6 @@ public partial class DataPage : Page
         }
         SeTDataGrid();
     }
-
     async void GenerateAveragePricesDataGrid()//Генерация средних цен DataGrid(Оптимизировано)
     {
         var averagePrices = await SQLScripts.GetAveragePricesAsync();

@@ -146,6 +146,8 @@
                         <RowDefinition/>
                         <RowDefinition Height="10"/>
                         <RowDefinition/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
@@ -170,6 +172,10 @@
                         <Label Content="по"/>
                         <fc:TextBoxPlus MinWidth="108" VerticalContentAlignment="Center" x:Name="lastPriceTextBox" TextChanged="lastPriceTextBox_TextChanged" PreviewTextInput="TextBox_PreviewTextInput"/>
                         <fc:ButtonPlus MinWidth="100" Content="Применить" Margin="20 0 0 0" Click="ButtonPlus_Click"/>
+                    </StackPanel>
+                    <Label Content="Разрез расчета:"  Grid.Row="6" Grid.Column="0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1">
+                        <fc:ComboBoxPlus Name="timelineCombo" Grid.Column="1" Grid.Row="0" MinWidth="300"/>
                     </StackPanel>
                 </Grid>
             </DockPanel>
