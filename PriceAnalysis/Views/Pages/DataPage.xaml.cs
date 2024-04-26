@@ -33,15 +33,7 @@ public partial class DataPage : Page
 
     async void Initialize()
     {
-        var uniqueCategories = await SQLScripts.GetAllCategories();
-        foreach (var category in uniqueCategories.Select(x => x.Name))
-        {
-            categoriesCombo.Items.Add(new ComboBoxItemPlus
-            {
-                Content = category
-            });
-        }
-
+        await GenerateCategoriesComboBox();
         await GenerateTimeLinesComboBox();
 
         if (parameter.Equals("Цены"))
@@ -61,7 +53,21 @@ public partial class DataPage : Page
         {
             timelineCombo.Items.Add(new ComboBoxItemPlus()
             {
-                Content = timeLine
+                Content = timeLine,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+            });
+        }
+    }
+
+    //Генерация комбобокса с категориями(Оптимизировано)
+    private async Task GenerateCategoriesComboBox()
+    {
+        var uniqueCategories = await SQLScripts.GetAllCategories();
+        foreach (var category in uniqueCategories.Select(x => x.Name))
+        {
+            categoriesCombo.Items.Add(new ComboBoxItemPlus
+            {
+                Content = category
             });
         }
     }
