@@ -38,8 +38,8 @@ public partial class MainViewModel : ObservableObject
             IsAuthButtonEnable = false;
             IsProgressBarVisible = true;
 
-            await LogFile.ClearLogFile();
             await LogFile.Create();//Создание Log-файла
+            await LogFile.ClearLogFile();//Очистка Log при наступлении нового месяца
             await SQLScripts.CreateDatabaseAsync();//Выполнение операций с БД
             await UpdateValues();//Выполнение парсинга и обновление БД, при 
         }

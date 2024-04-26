@@ -1,5 +1,4 @@
 ﻿using PriceAnalysis.ViewModel;
-using System.Diagnostics;
 using System.IO;
 
 namespace PriceAnalysis.Services.LogServices;

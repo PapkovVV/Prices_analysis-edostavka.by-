@@ -14,6 +14,7 @@ public partial class DataPageViewModel : ObservableObject
     string parameter = string.Empty;
 
     [ObservableProperty] string pageTitle;
+    [ObservableProperty] string helpText;
     [ObservableProperty] DateTime? startDate;
     [ObservableProperty] DateTime? lastDate;
     [ObservableProperty] DateTime? minimalDate;
@@ -32,12 +33,21 @@ public partial class DataPageViewModel : ObservableObject
             PageTitle = "ОТЧЕТ ПО СРЕДНИМ  ЦЕНАМ  НА  ТОВАРЫ, РЕАЛИЗУЕМЫМ В РОЗНИЧНОЙ СЕТИ\n" +
             "(на торговой площадке Евроопт)\n" +
             "(в рублях за килограмм, литр, десяток, изделие)";
+            HelpText = "\tСредние цены на продукты на сайте edostavka.by представляют собой средневзвешенные значения стоимости товаров, " +
+                "рассчитанные на основе цен от различных продавцов, доступных для онлайн-заказа. " +
+                "Они позволяют потребителям оценить среднюю стоимость продуктов и сравнить ее с другими торговыми площадками, " +
+                "что помогает принимать более осознанные решения о покупках.";
             PriceLabelVisibility = Visibility.Visible;
             PricesStackVisibility = Visibility.Visible;
         }
         else
         {
             PageTitle = "ОТЧЕТ ПО ИНДЕКСАМ ПОТРЕБИТЕЛЬСКИХ ЦЕН";
+            HelpText = "\tИндексы потребительских цен на сайте edostavka.by представляют собой показатели, " +
+                "отражающие изменения цен на потребительские товары и услуги в определенном временном периоде. " +
+                "Они рассчитываются на основе средних цен на определенный набор товаров и услуг, " +
+                "собранных из различных источников, и помогают анализировать тенденции в ценообразовании, " +
+                "инфляции и покупательской активности.";
             PriceLabelVisibility = Visibility.Collapsed;
             PricesStackVisibility = Visibility.Collapsed;
         }

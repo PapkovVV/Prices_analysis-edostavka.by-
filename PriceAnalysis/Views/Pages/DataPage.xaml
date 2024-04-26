@@ -181,6 +181,7 @@
             </DockPanel>
             
             <DataGrid x:Name="dataGrid" CanUserAddRows="False" IsReadOnly="True"/>
+            <TextBlock Margin="10" Text="{Binding HelpText}" TextWrapping="Wrap"/>
         </StackPanel>
     </Grid>
 </Page>

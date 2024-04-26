@@ -193,7 +193,11 @@ public partial class DataPage : Page
 
         if (typeof(T) == typeof(AveragePrice))
         {
-            List<AveragePrice> averagePrices = dataList.Cast<AveragePrice>().ToList();
+            List<AveragePrice> averagePrices = new List<AveragePrice>();//Объявляем список средних цен
+            if (GetTimeLine().Equals("День"))
+            {
+                averagePrices = dataList.Cast<AveragePrice>().ToList();
+            }
             if (averagePrices.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
             {
                 result = averagePrices.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
@@ -371,6 +375,12 @@ public partial class DataPage : Page
             case "12": return "декабря";
             default: return "некорректный номер месяца";
         }
+    }
+
+    //Получение временного разреза(Оптимизировано)
+    private string GetTimeLine()
+    {
+        return (timelineCombo.SelectedItem as ComboBoxItemPlus)?.Content.ToString()!.Trim() ?? "";
     }
 
     #endregion Работа со стрококвыми данными
