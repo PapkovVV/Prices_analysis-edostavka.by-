@@ -47,7 +47,7 @@ public partial class DataPageViewModel : ObservableObject
     }
 
     [RelayCommand]
-    void PrintExcel()
+    async Task PrintExcel()
     {
         var promptWindow = new PromptWindow();
         promptWindow.ShowDialog();
@@ -57,17 +57,17 @@ public partial class DataPageViewModel : ObservableObject
         {
             if (parameter.Equals("Цены"))
             {
-                ExcelExport.ExcelImportAndOpenAsync(DataGrid, "AveragePrices", PageTitle, result);
+                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "AveragePrices", PageTitle, result);
             }
             else
             {
-                ExcelExport.ExcelImportAndOpenAsync(DataGrid, "PriceIndexes", PageTitle, result);
+                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "PriceIndexes", PageTitle, result);
             }
         }
     }
 
     [RelayCommand]
-    void PrintWord()
+    async Task PrintWord()
     {
         var promptWindow = new PromptWindow();
         promptWindow.ShowDialog();
@@ -75,11 +75,12 @@ public partial class DataPageViewModel : ObservableObject
 
         if (parameter.Equals("Цены"))
         {
-            WordExport.WordImportAndOpen(DataGrid, "AveragePrices", PageTitle, result);
+            await WordExport.WordImportAndOpen(DataGrid, "AveragePrices", PageTitle, result);
         }
         else
         {
-            WordExport.WordImportAndOpen(DataGrid, "PriceIndexes", PageTitle, result);
+            await WordExport.WordImportAndOpen(DataGrid, "PriceIndexes", PageTitle, result);
         }
+
     }
 }

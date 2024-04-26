@@ -1,15 +1,13 @@
 ﻿using ClosedXML.Excel;
 using PriceAnalysis.DataBaseServices;
 using System.Data;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace PriceAnalysis.Services.ExportServices;
 
-public class ExcelExport:BaseExportClass
+public class ExcelExport : BaseExportClass
 {
     static int row = 1;//Строка
     static int column = 1;//Столбец (ячейка)
@@ -76,7 +74,7 @@ public class ExcelExport:BaseExportClass
             {
                 MessageBox.Show("Перед перезаписью сперва закройте файл.");
             }
-            BaseExportClass.OpenFile(filePathExcel, excelPath);
+            OpenFile(filePathExcel, excelPath);
         }
     }
 

@@ -6,7 +6,8 @@ namespace PriceAnalysis.Services.ExportServices;
 
 public class BaseExportClass
 {
-    protected static void OpenFile(string filePath, string programmPath) //Открытие файла(Optimized)
+    //Открытие файла(Оптимизировано)
+    protected static void OpenFile(string filePath, string programmPath)
     {
         try
         {
@@ -17,6 +18,7 @@ public class BaseExportClass
             MessageBox.Show(ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
         }
     }
+
     protected static List<DateTime> GetRequiredDates(params string[] dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
     {
         try

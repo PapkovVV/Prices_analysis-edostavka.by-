@@ -14,7 +14,7 @@ namespace PriceAnalysis.Services.ExportServices;
 
 public class WordExport : BaseExportClass
 {
-    public static async void WordImportAndOpen(DataGrid dataGrid, string name, string title, bool isNewFile)
+    public static async Task WordImportAndOpen(DataGrid dataGrid, string name, string title, bool isNewFile)
     {
         string wordPath = @"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; // Путь к исполняемому файлу Microsoft Word
         string filePathWord = isNewFile ? $@"ExportedFiles\Word\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.docx" :
@@ -62,7 +62,7 @@ public class WordExport : BaseExportClass
             {
                 MessageBox.Show("Перед перезаписью сперва закройте файл.");
             }
-            BaseExportClass.OpenFile(filePathWord, wordPath);
+            OpenFile(filePathWord, wordPath);
         }
     }
 
@@ -139,6 +139,8 @@ public class WordExport : BaseExportClass
             doc.InsertParagraph();
         }
     }
+
+    //Создание таблицы дополнительной информации индексов потребительских цен()
     private static async Task SetRequiredAverageProductPrices(DocX doc, List<string> dates, string title)
     {
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории

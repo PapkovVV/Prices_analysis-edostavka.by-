@@ -12,6 +12,8 @@ namespace PriceAnalysis.ViewModel;
 
 public partial class GraphicPageViewModel : ObservableObject
 {
+    private Func<double, string> axisYLabelFormatter;//Форматирование чисел по оси Oy
+
     [ObservableProperty] ComboBoxItemPlus selectedCategory;
     [ObservableProperty] DateTime? startPriceDate;
     [ObservableProperty] DateTime? endPriceDate;
@@ -42,6 +44,22 @@ public partial class GraphicPageViewModel : ObservableObject
         SetAxisXValues(allAveragePrices);
     }
 
+    public Func<double, string> AxisYLabelFormatter
+    {
+        get { return axisYLabelFormatter; }
+        set
+        {
+            axisYLabelFormatter = value;
+            OnPropertyChanged(nameof(AxisYLabelFormatter));
+        }
+    }
+
+    // Метод для форматирования значений оси Y
+    private string FormatAxisYLabel(double value)
+    {
+        return value.ToString("0.00");
+    }
+
     void SetData()// Установка значений для графика(Optimized)
     {
         if (averagePrices.Count > 0)
@@ -54,6 +72,7 @@ public partial class GraphicPageViewModel : ObservableObject
                     Values = new ChartValues<decimal>(averagePrices)
                 }
             };
+            AxisYLabelFormatter = FormatAxisYLabel;
         }
         else
         {

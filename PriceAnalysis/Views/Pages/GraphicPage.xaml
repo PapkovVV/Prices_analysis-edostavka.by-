@@ -34,7 +34,7 @@
                 <lvc:Axis Title="Дата" Labels="{Binding DateLabels}"/>
             </lvc:CartesianChart.AxisX>
             <lvc:CartesianChart.AxisY>
-                <lvc:Axis Title="Средняя цена"/>
+                <lvc:Axis Title="Средняя цена" LabelFormatter="{Binding AxisYLabelFormatter}"/>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
     </Grid>
