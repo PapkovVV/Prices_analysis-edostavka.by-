@@ -1,4 +1,5 @@
 ﻿using PriceAnalysis.ViewModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace PriceAnalysis.Services.LogServices;
@@ -48,6 +49,21 @@ public class LogFile
         finally
         {
             logMutex.ReleaseMutex();
+        }
+    }
+
+    //Очистка файла каждый месяц(оптимизировано)
+    public static async Task ClearLogFile()
+    {
+        if (File.Exists(logFilePath))
+        {
+            FileInfo fileInfo = new FileInfo(logFilePath);
+            DateTime lastModified = fileInfo.LastWriteTime;
+
+            if (lastModified.Month < DateTime.Now.Month)
+            {
+                File.WriteAllText(logFilePath, string.Empty);
+            }
         }
     }
 }

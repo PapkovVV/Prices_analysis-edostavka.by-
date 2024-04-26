@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Media;
 
 namespace PriceAnalysis.Views.Pages;
 
@@ -36,13 +35,12 @@ public partial class DataPage : Page
         await GenerateCategoriesComboBox();
         await GenerateTimeLinesComboBox();
 
-        if (parameter.Equals("Цены"))
-        {
-            GenerateAveragePricesDataGrid();
-        }
-        else
-            GeneratePriceIndexesDataGrid();
+        if (parameter.Equals("Цены")) GenerateAveragePricesDataGrid();
+        else GeneratePriceIndexesDataGrid();
+
     }
+
+    #region Генерация ComboBox
 
     //Генерация комбобокса с временными разрезами(Оптимизировано)
     private async Task GenerateTimeLinesComboBox()
@@ -71,6 +69,11 @@ public partial class DataPage : Page
             });
         }
     }
+
+    #endregion Генерация ComboBox
+
+    #region Генерация DataGrid
+
     async void GeneratePriceIndexesDataGrid()//Генерация Индексов DataGrid
     {
         var priceIndexes = await SQLScripts.GetAllPriceIndexes();
@@ -168,6 +171,8 @@ public partial class DataPage : Page
         GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);//Генерация основы для отображения данных
         SeTDataGrid();// Генерация таблицы для отображения данных
     }
+
+    #endregion Генерация DataGrid
 
     #region Все для генерации DataGrid с необходимыми данными
 
