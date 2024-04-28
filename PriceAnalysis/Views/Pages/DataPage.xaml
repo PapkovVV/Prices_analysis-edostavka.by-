@@ -175,7 +175,7 @@
                     </StackPanel>
                     <Label Content="Разрез расчета:"  Grid.Row="6" Grid.Column="0"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1">
-                        <fc:ComboBoxPlus Name="timelineCombo" Grid.Column="1" Grid.Row="0" MinWidth="300" SelectedIndex="0" HorizontalContentAlignment="Center"/>
+                        <fc:ComboBoxPlus Name="timelineCombo" Grid.Column="1" Grid.Row="0" MinWidth="300" SelectedIndex="0" HorizontalContentAlignment="Center" SelectionChanged="timelineCombo_SelectionChanged"/>
                     </StackPanel>
                 </Grid>
             </DockPanel>

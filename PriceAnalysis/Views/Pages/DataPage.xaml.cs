@@ -41,7 +41,6 @@ public partial class DataPage : Page
     }
 
     #region Генерация ComboBox
-
     //Генерация комбобокса с временными разрезами(Оптимизировано)
     private async Task GenerateTimeLinesComboBox()
     {
@@ -81,7 +80,7 @@ public partial class DataPage : Page
         List<string> uniqueCategories = await GetNeededCategories();
         if (!string.IsNullOrEmpty(categoriesCombo.Text))
         {
-            priceIndexes = GetNeededObjects(priceIndexes);//Отображение данных в соответствии с поиском
+            priceIndexes = await GetNeededObjects(priceIndexes);//Отображение данных в соответствии с поиском
         }
 
 
@@ -161,10 +160,8 @@ public partial class DataPage : Page
 
         List<string> uniqueCategories = await GetNeededCategories(); //Категории для отображения в DataGrid
 
-        if (!string.IsNullOrEmpty(categoriesCombo.Text))
-        {
-            averagePrices = GetNeededObjects(averagePrices);//Отображение данных в соответствии с поиском
-        }
+        averagePrices = await GetNeededObjects(averagePrices);//Отображение данных в соответствии с поиском
+
 
         List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
@@ -187,17 +184,19 @@ public partial class DataPage : Page
         }
         return allCategories.Select(x => x.Name).OrderBy(x => x).Distinct().ToList();
     }
-    private List<T> GetNeededObjects<T>(List<T> dataList)//Получение списка объектов в соответствии с поиском (Оптимизировано)
+    private async Task<List<T>> GetNeededObjects<T>(List<T> dataList)//Получение списка объектов в соответствии с поиском (Оптимизировано)
     {
         List<T> result = new List<T>();//Список результата
 
         if (typeof(T) == typeof(AveragePrice))
         {
-            List<AveragePrice> averagePrices = new List<AveragePrice>();//Объявляем список средних цен
-            if (GetTimeLine().Equals("День"))
+            List<AveragePrice> averagePrices = dataList.Cast<AveragePrice>().ToList();//Объявляем список средних цен
+
+            if (GetTimeLine().Equals("Месяц"))
             {
-                averagePrices = dataList.Cast<AveragePrice>().ToList();
+                averagePrices = GetMonthlyAveragePrices(averagePrices);
             }
+
             if (averagePrices.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
             {
                 result = averagePrices.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
@@ -246,7 +245,7 @@ public partial class DataPage : Page
 
                     if (price != null)
                     {
-                        dataTable.Rows[i][header] = price.Average_Price;
+                        dataTable.Rows[i][header] = price.Average_Price.ToString("0.00");
                     }
                 }
             }
@@ -331,6 +330,35 @@ public partial class DataPage : Page
             .ToList();
     }
 
+    private List<AveragePrice> GetMonthlyAveragePrices(List<AveragePrice> allAveragePrices)//Получение списка средних цен в разрезе месяца
+    {
+        List<AveragePrice> averagePricesByMonth = new List<AveragePrice>();
+
+        var requiredCategoryIds = allAveragePrices.Select(x => new { CategoryId = x.CategoryId, CategoryName = x.CategoryName }).Distinct();//Получаем все Id имеющихся категорий
+        var allMonthsAndYears = allAveragePrices.Select(x => new { Month = x.AveragePriceDate.Month, Year = x.AveragePriceDate.Year }).Distinct();
+
+        foreach (var categoryItem in requiredCategoryIds)
+        {
+            foreach (var dateItem in allMonthsAndYears)
+            {
+                var averagePriceofAveragePrices = allAveragePrices.Where(x => x.CategoryId == categoryItem.CategoryId
+                                                && x.AveragePriceDate.Month == dateItem.Month && x.AveragePriceDate.Year == dateItem.Year)
+                                                    .Select(x => x.Average_Price).Average();//Получаем среднюю цену средних цен определенной категории за определенный месяц
+
+                averagePricesByMonth.Add(new AveragePrice
+                {
+                    CategoryId = categoryItem.CategoryId,
+                    AveragePriceDate = new DateTime(dateItem.Year, dateItem.Month, allAveragePrices.Where(x => x.AveragePriceDate.Month == dateItem.Month).
+                                                     Select(x => x.AveragePriceDate).Distinct().Min().Day),
+                    CategoryName = categoryItem.CategoryName,
+                    Average_Price = averagePriceofAveragePrices
+                });
+            }
+        }
+
+        return averagePricesByMonth;
+    }
+
     #endregion Фильтры
 
     #region Работа со строковыми данными
@@ -340,45 +368,72 @@ public partial class DataPage : Page
         string result = Regex.Replace(input, @"[^\d.]", "");
         return result;
     }
-    static string GetHeaderName(DateTime firstDate, DateTime? secondDate = null)//Получение названия столбца для DataGrid (Оптимизировано)
+    private string GetHeaderName(DateTime firstDate, DateTime? secondDate = null)//Получение названия столбца для DataGrid (Оптимизировано)
     {
         string header = string.Empty;
         if (secondDate != null)
         {
             var dateFrom = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
-            var dateTo = RemoveNonNumeric(secondDate?.ToShortDateString()).Split(".");
-            header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -" +
-                    $" {dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+            var dateTo = RemoveNonNumeric(secondDate?.ToShortDateString()!).Split(".");
+            header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -\n" +
+                    $"{dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
         }
         else
         {
-            var dateMass = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
-            header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
+            string[] dateMass = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
+            if (GetTimeLine().Equals("День"))
+            {
+                header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
+            }
+            else
+            {
+                header = $"{GetMonth(dateMass[1])} {dateMass[2]}";
+            }
         }
         return header;
     }
-    static string GetMonth(string monthNumber)//Получение названия месяца(Оптимизировано)
+    private string GetMonth(string monthNumber)//Получение названия месяца(Оптимизировано)
     {
-        switch (monthNumber)
+        if (GetTimeLine().Equals("День"))
         {
-            case "01": return "января";
-            case "02": return "февраля";
-            case "03": return "марта";
-            case "04": return "апреля";
-            case "05": return "мая";
-            case "06": return "июня";
-            case "07": return "июля";
-            case "08": return "августа";
-            case "09": return "сентября";
-            case "10": return "октября";
-            case "11": return "ноября";
-            case "12": return "декабря";
-            default: return "некорректный номер месяца";
+            switch (monthNumber)
+            {
+                case "01": return "января";
+                case "02": return "февраля";
+                case "03": return "марта";
+                case "04": return "апреля";
+                case "05": return "мая";
+                case "06": return "июня";
+                case "07": return "июля";
+                case "08": return "августа";
+                case "09": return "сентября";
+                case "10": return "октября";
+                case "11": return "ноября";
+                case "12": return "декабря";
+                default: return "некорректный номер месяца";
+            }
+        }
+        else //if(GetTimeLine().Equals("Месяц"))
+        {
+            switch (monthNumber)
+            {
+                case "01": return "Январь";
+                case "02": return "Февраль";
+                case "03": return "Март";
+                case "04": return "Апрель";
+                case "05": return "Май";
+                case "06": return "Июнь";
+                case "07": return "Июль";
+                case "08": return "Август";
+                case "09": return "Сентябрь";
+                case "10": return "Октябрь";
+                case "11": return "Ноябрь";
+                case "12": return "Декабрь";
+                default: return "некорректный номер месяца";
+            }
         }
     }
-
-    //Получение временного разреза(Оптимизировано)
-    private string GetTimeLine()
+    private string GetTimeLine()//Получение временного разреза(Оптимизировано)
     {
         return (timelineCombo.SelectedItem as ComboBoxItemPlus)?.Content.ToString()!.Trim() ?? "";
     }
@@ -386,6 +441,7 @@ public partial class DataPage : Page
     #endregion Работа со стрококвыми данными
 
     #region События
+
     private void LastDatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
     {
         lastDate = lastDatePicker.SelectedDate;
@@ -459,6 +515,16 @@ public partial class DataPage : Page
             e.Handled = true;
         }
     }
+    private void timelineCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (parameter.Equals("Цены"))
+        {
+            dataTable = new DataTable();
+            GenerateAveragePricesDataGrid();
+        }
+    }
 
     #endregion События
+
+
 }
