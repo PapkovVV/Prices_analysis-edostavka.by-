@@ -310,7 +310,16 @@ public partial class DataPage : Page
 
     private List<DateTime> AveragePricesPriceFilter(List<AveragePrice> averagePrices)//Фильтр данных по необходимым средним ценам (Оптимизировано)
     {
-        var query = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate);
+        IEnumerable<AveragePrice>? query = new List<AveragePrice>();
+
+        if (GetTimeLine().Equals("День"))
+        {
+            query = averagePrices.Where(x => x.AveragePriceDate >= startDate && x.AveragePriceDate <= lastDate);
+        }
+        else //if(GetTimeLine().Equals("Месяц"))
+        {
+            query = averagePrices.Where(x => x.AveragePriceDate.Month >= startDate?.Month && x.AveragePriceDate.Month <= lastDate?.Month);
+        }
 
         if (startPrice != null)
         {
@@ -321,6 +330,9 @@ public partial class DataPage : Page
         {
             query = query.Where(x => x.Average_Price <= lastPrice);
         }
+
+        
+        
 
         return query
             .Select(x => x.AveragePriceDate)
