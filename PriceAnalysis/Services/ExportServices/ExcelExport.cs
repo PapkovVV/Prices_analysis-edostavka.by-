@@ -69,12 +69,12 @@ public class ExcelExport : BaseExportClass
             try
             {
                 workbook.SaveAs(filePathExcel);
+                OpenFile(filePathExcel, excelPath);
             }
             catch (IOException)
             {
                 MessageBox.Show("Перед перезаписью сперва закройте файл.");
             }
-            OpenFile(filePathExcel, excelPath);
         }
     }
 

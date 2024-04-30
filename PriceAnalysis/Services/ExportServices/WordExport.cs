@@ -57,12 +57,12 @@ public class WordExport : BaseExportClass
             try
             {
                 doc.Save();
+                OpenFile(filePathWord, wordPath);
             }
             catch (IOException)
             {
                 MessageBox.Show("Перед перезаписью сперва закройте файл.");
             }
-            OpenFile(filePathWord, wordPath);
         }
     }
 

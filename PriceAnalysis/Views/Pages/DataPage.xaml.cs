@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 
 namespace PriceAnalysis.Views.Pages;
 
@@ -167,6 +168,7 @@ public partial class DataPage : Page
 
         GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);//Генерация основы для отображения данных
         SeTDataGrid();// Генерация таблицы для отображения данных
+
     }
 
     #endregion Генерация DataGrid
@@ -331,9 +333,6 @@ public partial class DataPage : Page
             query = query.Where(x => x.Average_Price <= lastPrice);
         }
 
-        
-        
-
         return query
             .Select(x => x.AveragePriceDate)
             .OrderBy(x => x)
@@ -341,7 +340,6 @@ public partial class DataPage : Page
             .TakeLast(7)
             .ToList();
     }
-
     private List<AveragePrice> GetMonthlyAveragePrices(List<AveragePrice> allAveragePrices)//Получение списка средних цен в разрезе месяца
     {
         List<AveragePrice> averagePricesByMonth = new List<AveragePrice>();
