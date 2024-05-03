@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using PriceAnalysis.DataBaseServices;
 using System.Data;
 using System.IO;
@@ -11,37 +13,19 @@ public class ExcelExport : BaseExportClass
 {
     static int row = 1;//Строка
     static int column = 1;//Столбец (ячейка)
+    const string excelPath = @"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE";
+    const string sheetName = "Sheet1";
+
     public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, bool isNewFile)
     {
         row = 1;
         string filePathExcel = isNewFile ? $@"ExportedFiles\Excel\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx" :
             $@"ExportedFiles\Excel\Exported{name}.xlsx";
-        const string excelPath = @"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE";
-        const string sheetName = "Sheet1";
 
+        List<string> columnHeaders = GetHeaderNames(dataGrid);//Получаем названия 
+        List<string> cellValues = GetCellValues(dataGrid);//Получаем основные данные
 
-        List<string> columnHeaders = new List<string>();//Названия столбцов
-        foreach (var column in dataGrid.Columns)
-        {
-            if (column is DataGridTextColumn textColumn)
-            {
-                columnHeaders.Add(textColumn.Header.ToString());
-            }
-        }
-
-        List<string> cellValues = new List<string>();
-
-        foreach (var item in dataGrid.Items)
-        {
-            if (item is DataRowView row)
-            {
-                foreach (var cellValue in row.Row.ItemArray)
-                {
-                    cellValues.Add(cellValue.ToString());
-                }
-                cellValues.Add("end");
-            }
-        }
+        
 
 
 
@@ -78,6 +62,8 @@ public class ExcelExport : BaseExportClass
         }
     }
 
+    #region Установка данных
+
     private static void SetFileTittle(IXLWorksheet worksheet, string title)//Установка заголовка файла (Оптимизировано)
     {
         for (int i = 0; i < title.Split("\n").Count(); i++)
@@ -111,7 +97,6 @@ public class ExcelExport : BaseExportClass
         }
         ++row;
     }
-
     private static void SetCellValues(IXLWorksheet worksheet, bool areDates = false, params string[] cellValues)//Заполнение ячеек данными(Оптимизировано)
     {
         int cell = column;
@@ -195,4 +180,35 @@ public class ExcelExport : BaseExportClass
         row+=3;
         column = 1;
     }
+
+    #endregion
+
+    #region Получение данных
+
+    private static List<string> GetHeaderNames(DataGrid dataGrid)//Получаем названия столбцов(Оптимизировано)
+    {
+        return dataGrid.Columns.OfType<DataGridTextColumn>()
+                               .Select(column => column.Header?.ToString()!)
+                               .ToList();
+    }
+    private static List<string> GetCellValues(DataGrid dataGrid)
+    {
+        List<string> cellValues = new List<string>();
+
+        foreach (var item in dataGrid.Items)
+        {
+            if (item is DataRowView row)
+            {
+                foreach (var cellValue in row.Row.ItemArray)
+                {
+                    cellValues.Add(cellValue!.ToString()!);
+                }
+                cellValues.Add("end");
+            }
+        }
+
+        return cellValues;
+    }
+
+    #endregion
 }
