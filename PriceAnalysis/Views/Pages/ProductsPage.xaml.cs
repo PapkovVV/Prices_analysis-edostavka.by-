@@ -145,7 +145,7 @@ public partial class ProductsPage : Page
             });
         }
 
-        pricesDatesCombo.SelectedIndex = uniqueAttributes.Count - 1;
+        pricesDatesCombo.SelectedIndex = uniqueDates.Count - 1;
     }
 
     private void categoriesCombo_TextChanged(object sender, TextChangedEventArgs e)

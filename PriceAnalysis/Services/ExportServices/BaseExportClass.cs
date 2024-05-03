@@ -27,7 +27,14 @@ public class BaseExportClass
             for (int i = 0; i < dates.Length; i++)
             {
                 var date = dates[i].Trim();
-                result.Add(DateTime.ParseExact(date, "dd MMMM yyyy", CultureInfo.CurrentCulture));
+                if (dates.Length == 2)//Для месячного отрезка
+                {
+
+                }
+                else//Для дневного отрезка
+                {
+                    result.Add(DateTime.ParseExact(date, "dd MMMM yyyy", CultureInfo.CurrentCulture));
+                }
             }
             return result;
         }

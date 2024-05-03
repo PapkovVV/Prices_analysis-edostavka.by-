@@ -103,8 +103,7 @@ public class ExcelExport : BaseExportClass
                 cell = worksheet.Cell(row, column);
                 cell.Value = requiredHeader;
             }
-            cell.Style.Font.SetBold(true)
-                          .Font.SetFontSize(16);
+            cell.Style.Font.SetBold(true).Font.SetFontSize(16);
             if (!isTitle)
             {
                 cell.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);

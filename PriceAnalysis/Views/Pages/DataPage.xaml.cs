@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Media;
 
 namespace PriceAnalysis.Views.Pages;
 
@@ -79,13 +78,7 @@ public partial class DataPage : Page
         var priceIndexes = await SQLScripts.GetAllPriceIndexes();
 
         List<string> uniqueCategories = await GetNeededCategories();
-        if (!string.IsNullOrEmpty(categoriesCombo.Text))
-        {
-            priceIndexes = await GetNeededObjects(priceIndexes);//Отображение данных в соответствии с поиском
-        }
-
-
-
+        priceIndexes = await GetNeededObjects(priceIndexes);//Отображение данных в соответствии с поиском
 
         var distinctPriceIndexes = priceIndexes.Where(x => x.IndexDateFrom >= startDate && x.IndexDateTo <= lastDate)
                                     .GroupBy(pi => new { pi.IndexDateFrom, pi.IndexDateTo })
@@ -163,12 +156,10 @@ public partial class DataPage : Page
 
         averagePrices = await GetNeededObjects(averagePrices);//Отображение данных в соответствии с поиском
 
-
         List<DateTime> uniqueDates = AveragePricesPriceFilter(averagePrices);//Список дат в соответствии с ценовым фильтром
 
         GenerateDataTable(uniqueCategories, averagePrices, uniqueDates);//Генерация основы для отображения данных
         SeTDataGrid();// Генерация таблицы для отображения данных
-
     }
 
     #endregion Генерация DataGrid
@@ -207,6 +198,13 @@ public partial class DataPage : Page
         else
         {
             List<PriceIndex> priceIndexes = dataList.Cast<PriceIndex>().ToList();
+
+            if (GetTimeLine().Equals("Месяц"))
+            {
+                var allAveragePrices = await SQLScripts.GetAveragePricesAsync();
+                priceIndexes = GetMonthlyPriceIndexes(allAveragePrices);
+            }
+
             if (priceIndexes.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
             {
                 result = priceIndexes.Where(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())).Cast<T>().ToList();
@@ -368,7 +366,18 @@ public partial class DataPage : Page
 
         return averagePricesByMonth;
     }
+    private List<PriceIndex> GetMonthlyPriceIndexes(List<AveragePrice> allAveragePrices)//Получение списка индексов цен в разрезе месяца
+    {
+        List<PriceIndex> priceIndexesByMonth = new List<PriceIndex>();
 
+        var requiredAveragePricesByMonth = GetMonthlyAveragePrices(allAveragePrices);
+        foreach (var item in requiredAveragePricesByMonth)
+        {
+            MessageBox.Show($"{item.CategoryName} {item.Average_Price} {item.AveragePriceDate.Month}");
+        }
+
+        return new List<PriceIndex>();
+    }
     #endregion Фильтры
 
     #region Работа со строковыми данными
@@ -527,10 +536,14 @@ public partial class DataPage : Page
     }
     private void timelineCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        dataTable = new DataTable();
         if (parameter.Equals("Цены"))
         {
-            dataTable = new DataTable();
             GenerateAveragePricesDataGrid();
+        }
+        else
+        {
+            GeneratePriceIndexesDataGrid();
         }
     }
 
