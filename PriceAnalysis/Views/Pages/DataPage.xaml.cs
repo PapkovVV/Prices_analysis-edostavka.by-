@@ -112,7 +112,7 @@ public partial class DataPage : Page
                         FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
                         x.IndexDateFrom == priceInd.IndexDateFrom && x.IndexDateTo == priceInd.IndexDateTo).IndexValue;
 
-                    dataTable.Rows[i][header] = u;
+                    dataTable.Rows[i][header] = u.ToString("0.00");
                 }
             }
 
@@ -371,12 +371,26 @@ public partial class DataPage : Page
         List<PriceIndex> priceIndexesByMonth = new List<PriceIndex>();
 
         var requiredAveragePricesByMonth = GetMonthlyAveragePrices(allAveragePrices);
-        foreach (var item in requiredAveragePricesByMonth)
+
+        var requiredCategoryIds = allAveragePrices.Select(x => new { CategoryId = x.CategoryId, CategoryName = x.CategoryName }).Distinct();//Получаем все Id и названия имеющихся категорий
+
+        foreach (var categoryItem in requiredCategoryIds)
         {
-            MessageBox.Show($"{item.CategoryName} {item.Average_Price} {item.AveragePriceDate.Month}");
+            var requiredCategoryPrices = requiredAveragePricesByMonth.Where(x => x.CategoryId == categoryItem.CategoryId).OrderBy(x => x.AveragePriceDate);
+            for (int i = 0; i < requiredCategoryPrices.Count() - 1; i++)
+            {
+                priceIndexesByMonth.Add(new PriceIndex
+                {
+                    CategoryId = categoryItem.CategoryId,
+                    CategoryName = categoryItem.CategoryName,
+                    IndexDateFrom = requiredCategoryPrices.ElementAt(i).AveragePriceDate,
+                    IndexDateTo = requiredCategoryPrices.ElementAt(i + 1).AveragePriceDate,
+                    IndexValue = (requiredCategoryPrices.ElementAt(i + 1).Average_Price/requiredCategoryPrices.ElementAt(i).Average_Price) * 100
+                });
+            }
         }
 
-        return new List<PriceIndex>();
+        return priceIndexesByMonth;
     }
     #endregion Фильтры
 
