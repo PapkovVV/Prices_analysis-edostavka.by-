@@ -408,8 +408,16 @@ public partial class DataPage : Page
         {
             var dateFrom = RemoveNonNumeric(firstDate.ToShortDateString()).Split(".");
             var dateTo = RemoveNonNumeric(secondDate?.ToShortDateString()!).Split(".");
-            header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -\n" +
-                    $"{dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+
+            if (GetTimeLine().Equals("День"))
+            {
+                header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -\n" +
+                        $"{dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
+            }
+            else
+            {
+                header = $"Период: {GetMonth(dateFrom[1])} - {GetMonth(dateTo[1])}";
+            }
         }
         else
         {
