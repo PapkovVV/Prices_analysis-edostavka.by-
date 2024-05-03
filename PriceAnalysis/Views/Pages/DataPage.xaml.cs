@@ -108,11 +108,10 @@ public partial class DataPage : Page
 
                 for (int i = 0; i < uniqueCategories.Count; i++)
                 {
-                    var u = priceIndexes.
-                        FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
-                        x.IndexDateFrom == priceInd.IndexDateFrom && x.IndexDateTo == priceInd.IndexDateTo).IndexValue;
+                    PriceIndex? u = priceIndexes.FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
+                        x.IndexDateFrom == priceInd.IndexDateFrom && x.IndexDateTo == priceInd.IndexDateTo);
 
-                    dataTable.Rows[i][header] = u.ToString("0.00");
+                    dataTable.Rows[i][header] = u?.IndexValue.ToString("0.00");
                 }
             }
 
