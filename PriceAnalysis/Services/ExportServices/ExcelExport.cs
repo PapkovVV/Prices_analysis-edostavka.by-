@@ -1,6 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using DocumentFormat.OpenXml.Spreadsheet;
 using PriceAnalysis.DataBaseServices;
 using System.Data;
 using System.IO;
@@ -15,7 +13,7 @@ public class ExcelExport : BaseExportClass
     static int column;//Столбец (ячейка)
     const string excelPath = @"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE";
     const string sheetName = "Sheet1";
-    static string timeline = ""; 
+    static string timeline = "";
 
     public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, string timeLine, bool isNewFile)
     {
@@ -24,7 +22,7 @@ public class ExcelExport : BaseExportClass
         column = 1;
         string filePathExcel = isNewFile ? $@"ExportedFiles\Excel\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx" :
             $@"ExportedFiles\Excel\Exported{name}.xlsx";
-        
+
         //Основная информация
         List<string> columnHeaders = GetHeaderNames(dataGrid);//Получаем названия 
         List<string> cellValues = GetCellValues(dataGrid);//Получаем основные данные
@@ -40,9 +38,17 @@ public class ExcelExport : BaseExportClass
             //Дополнительная информация
             if (name.Equals("AveragePrices"))
             {
-                column = 2;
-                SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
-                await SetRequiredProductPrices(worksheet, columnHeaders);
+                if (timeline.Equals("День"))
+                {
+                    column = 2;
+                    SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
+                    await SetRequiredProductPrices(worksheet, columnHeaders);
+                }
+                else
+                {
+                    SetHeaderRow(worksheet, "Используемые ежедневные средние цены");//Устанавливаем заголовок дополнительной информации
+                    await SetRequireAveragePricesPricesByMonth(worksheet, columnHeaders);
+                }
             }
             else
             {
@@ -182,6 +188,45 @@ public class ExcelExport : BaseExportClass
         row+=3;
         column = 1;
     }
+    private static async Task SetRequireAveragePricesPricesByMonth(IXLWorksheet worksheet, List<string> dates)
+    {
+        var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
+        var allAveragePrices = await SQLScripts.GetAveragePricesAsync();//Получаем все средние цены
+
+        List<DateTime> requiredDates = new List<DateTime>();
+
+        foreach (var date in dates.TakeLast(dates.Count - 1))
+        {
+            foreach (var reqDate in GetRequiredDates(timeline, date))
+            {
+                requiredDates.Add(reqDate);
+            }
+        }
+
+        int dataRow = 0;
+        foreach (var category in allCategories)
+        {
+            row = GetEmptyRow(worksheet) + 1;
+            SetCellValues(worksheet, true, category.Name);
+            dataRow = row;
+            foreach (var date in requiredDates)
+            {
+                row = dataRow;
+                SetCellValues(worksheet, true, date.ToString("MMMM yyyy"));
+                var requiredAveragePrices = allAveragePrices.Where(x => x.CategoryId == category.Id &&
+                                                                            x.AveragePriceDate.Month.Equals(date.Month) &&
+                                                                            x.AveragePriceDate.Year.Equals(date.Year));
+                foreach (var price in requiredAveragePrices)
+                {
+                    SetCellValues(worksheet, false, $"{price.AveragePriceDate.ToShortDateString()}: {price.Average_Price}");
+                }
+                column++;
+            }
+            column = 1;
+        }
+        row+=3;
+        column = 1;
+    }
 
     #endregion
 
@@ -210,6 +255,19 @@ public class ExcelExport : BaseExportClass
         }
 
         return cellValues;
+    }
+    private static int GetEmptyRow(IXLWorksheet worksheet)//Нахождение первой пустой строки после последней непустой(Оптимизировано)
+    {
+        int lastRow = worksheet.LastRowUsed().RowNumber();
+        MessageBox.Show(lastRow + "");
+        int emptyRow = lastRow + 1;
+        
+        while (!string.IsNullOrEmpty(worksheet.Cell(emptyRow, 1).Value.ToString()))
+        {
+            emptyRow++;
+        }
+
+        return emptyRow;
     }
 
     #endregion
