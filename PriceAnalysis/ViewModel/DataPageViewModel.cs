@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FullControls.Controls;
 using PriceAnalysis.DataBaseServices;
 using PriceAnalysis.Services.ExportServices;
 using PriceAnalysis.Views.Windows;
@@ -15,6 +16,7 @@ public partial class DataPageViewModel : ObservableObject
 
     [ObservableProperty] string pageTitle;
     [ObservableProperty] string helpText;
+    [ObservableProperty] ComboBoxItemPlus timeline;
     [ObservableProperty] DateTime? startDate;
     [ObservableProperty] DateTime? lastDate;
     [ObservableProperty] DateTime? minimalDate;
@@ -67,11 +69,11 @@ public partial class DataPageViewModel : ObservableObject
         {
             if (parameter.Equals("Цены"))
             {
-                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "AveragePrices", PageTitle, result);
+                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "AveragePrices", PageTitle, GetTimeline(), result);
             }
             else
             {
-                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "PriceIndexes", PageTitle, result);
+                await ExcelExport.ExcelImportAndOpenAsync(DataGrid, "PriceIndexes", PageTitle, GetTimeline(), result);
             }
         }
     }
@@ -85,12 +87,17 @@ public partial class DataPageViewModel : ObservableObject
 
         if (parameter.Equals("Цены"))
         {
-            await WordExport.WordImportAndOpen(DataGrid, "AveragePrices", PageTitle, result);
+            await WordExport.WordImportAndOpen(DataGrid, "AveragePrices", PageTitle, GetTimeline(), result);
         }
         else
         {
-            await WordExport.WordImportAndOpen(DataGrid, "PriceIndexes", PageTitle, result);
+            await WordExport.WordImportAndOpen(DataGrid, "PriceIndexes", PageTitle, GetTimeline(), result);
         }
 
+    }
+
+    private string GetTimeline()//Получение временного отрезка(Оптимизировано)
+    {
+        return Timeline.Content.ToString()!;
     }
 }

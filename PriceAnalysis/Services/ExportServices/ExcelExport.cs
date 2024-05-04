@@ -11,23 +11,23 @@ namespace PriceAnalysis.Services.ExportServices;
 
 public class ExcelExport : BaseExportClass
 {
-    static int row = 1;//Строка
-    static int column = 1;//Столбец (ячейка)
+    static int row;//Строка
+    static int column;//Столбец (ячейка)
     const string excelPath = @"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE";
     const string sheetName = "Sheet1";
+    static string timeline = ""; 
 
-    public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, bool isNewFile)
+    public static async Task ExcelImportAndOpenAsync(DataGrid dataGrid, string name, string title, string timeLine, bool isNewFile)
     {
+        timeline = timeLine;
         row = 1;
+        column = 1;
         string filePathExcel = isNewFile ? $@"ExportedFiles\Excel\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx" :
             $@"ExportedFiles\Excel\Exported{name}.xlsx";
-
+        
+        //Основная информация
         List<string> columnHeaders = GetHeaderNames(dataGrid);//Получаем названия 
         List<string> cellValues = GetCellValues(dataGrid);//Получаем основные данные
-
-        
-
-
 
         using (var workbook = new XLWorkbook())
         {
@@ -36,6 +36,8 @@ public class ExcelExport : BaseExportClass
             SetFileTittle(worksheet, title);//Устанавливаем заголовок файла
             SetHeaderRow(worksheet, "", false, columnHeaders.ToArray());//Устанавливаем заголовки для столбцов
             SetCellValues(worksheet, false, cellValues.ToArray());//Устанавливаем значения для ячеек средних цен/индексов и получаем след пустую строку
+
+            //Дополнительная информация
             if (name.Equals("AveragePrices"))
             {
                 column = 2;
@@ -123,7 +125,7 @@ public class ExcelExport : BaseExportClass
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
         var allProductPrices = await SQLScripts.GetAllPricesAsync();//Получаем все цены
 
-        var requiredDates = GetRequiredDates(dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
+        var requiredDates = GetRequiredDates(timeline, dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
 
         foreach (var category in allCategories)
         {
@@ -157,7 +159,7 @@ public class ExcelExport : BaseExportClass
 
         foreach (var date in dates.TakeLast(dates.Count - 1))
         {
-            foreach (var reqDate in GetRequiredDates(date.Replace("Период: ", "").Split('-')))
+            foreach (var reqDate in GetRequiredDates(timeline, date.Replace("Период: ", "").Split('-')))
             {
                 requiredDates.Add(reqDate);
             }

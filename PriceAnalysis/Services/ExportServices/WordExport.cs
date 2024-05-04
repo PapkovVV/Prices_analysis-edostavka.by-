@@ -14,18 +14,20 @@ namespace PriceAnalysis.Services.ExportServices;
 
 public class WordExport : BaseExportClass
 {
-    public static async Task WordImportAndOpen(DataGrid dataGrid, string name, string title, bool isNewFile)
+    static string timeline = "";
+    public static async Task WordImportAndOpen(DataGrid dataGrid, string name, string title, string timeLine, bool isNewFile)
     {
         string wordPath = @"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; // Путь к исполняемому файлу Microsoft Word
         string filePathWord = isNewFile ? $@"ExportedFiles\Word\Exported{name}_{DateTime.Now:yyyyMMdd_HHmmss}.docx" :
             $@"ExportedFiles\Word\Exported{name}.docx";
+        timeline = timeLine;
 
         List<string> columnHeaders = new List<string>();//Названия столбцов
         foreach (var column in dataGrid.Columns)
         {
             if (column is DataGridTextColumn textColumn)
             {
-                columnHeaders.Add(textColumn.Header.ToString());
+                columnHeaders.Add(textColumn.Header.ToString()!);
             }
         }
 
@@ -37,7 +39,7 @@ public class WordExport : BaseExportClass
             {
                 foreach (var cellValue in row.Row.ItemArray)
                 {
-                    cellValues.Add(cellValue.ToString());
+                    cellValues.Add(cellValue.ToString()!);
                 }
                 cellValues.Add("end");
             }
@@ -100,7 +102,7 @@ public class WordExport : BaseExportClass
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
         var allProductPrices = await SQLScripts.GetAllPricesAsync();//Получаем все цены
 
-        var requiredDates = GetRequiredDates(dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
+        var requiredDates = GetRequiredDates(timeline, dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
 
         doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
         doc.InsertParagraph(title).FontSize(13).Font("Times New Roman").Alignment = Alignment.center;
@@ -150,7 +152,7 @@ public class WordExport : BaseExportClass
 
         foreach (var date in dates.TakeLast(dates.Count - 1))
         {
-            foreach (var reqDate in GetRequiredDates(date.Replace("Период: ", "").Split('-')))
+            foreach (var reqDate in GetRequiredDates(timeline, date.Replace("Период: ", "").Split('-')))
             {
                 requiredDates.Add(reqDate);
             }

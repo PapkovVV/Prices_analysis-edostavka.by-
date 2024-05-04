@@ -19,7 +19,7 @@ public class BaseExportClass
         }
     }
 
-    protected static List<DateTime> GetRequiredDates(params string[] dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
+    protected static List<DateTime> GetRequiredDates(string timeline ,params string[] dates)//Получение всех дат, сипользуемых в отчете(Оптимизировано)
     {
         try
         {
@@ -27,13 +27,13 @@ public class BaseExportClass
             for (int i = 0; i < dates.Length; i++)
             {
                 var date = dates[i].Trim();
-                if (dates.Length == 2)//Для месячного отрезка
-                {
-
-                }
-                else//Для дневного отрезка
+                if (timeline.Equals("День"))
                 {
                     result.Add(DateTime.ParseExact(date, "dd MMMM yyyy", CultureInfo.CurrentCulture));
+                }
+                else
+                {
+                    result.Add(DateTime.ParseExact(date, "MMMM yyyy", CultureInfo.CurrentCulture));
                 }
             }
             return result;

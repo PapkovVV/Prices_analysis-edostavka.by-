@@ -214,15 +214,18 @@ public partial class DataPage : Page
     }
     private void GenerateDataTable(List<string> uniqueCategories, List<AveragePrice> averagePrices, List<DateTime> uniqueDates)//Генерация основы данных для DataGrid
     {
+        dataTable = new DataTable();
         if (uniqueDates != null && uniqueDates.Count > 0)
         {
-            dataTable = new DataTable();
             dataTable.Columns.Add("Категория", typeof(string));
 
             foreach (var date in uniqueDates)
             {
                 string header = GetHeaderName(date);
-                dataTable.Columns.Add(header, typeof(decimal));
+                if (!dataTable.Columns.Contains(header))
+                {
+                    dataTable.Columns.Add(header, typeof(decimal));
+                }
             }
 
             foreach (var category in uniqueCategories)
@@ -520,10 +523,12 @@ public partial class DataPage : Page
     {
         if (parameter.Equals("Цены"))
         {
-            dataTable = new DataTable();
             GenerateAveragePricesDataGrid();
         }
-        else GeneratePriceIndexesDataGrid();
+        else
+        {
+            GeneratePriceIndexesDataGrid();
+        }
     }
     private void startPriceTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
@@ -557,7 +562,6 @@ public partial class DataPage : Page
     }
     private void timelineCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        dataTable = new DataTable();
         if (parameter.Equals("Цены"))
         {
             GenerateAveragePricesDataGrid();
