@@ -13,6 +13,7 @@ namespace PriceAnalysis.ViewModel;
 public partial class GraphicPageViewModel : ObservableObject
 {
     private Func<double, string> axisYLabelFormatter;//Форматирование чисел по оси Oy
+    private string _graphicParameter = "";
 
     [ObservableProperty] ComboBoxItemPlus selectedCategory;
     [ObservableProperty] DateTime? startPriceDate;
@@ -23,9 +24,10 @@ public partial class GraphicPageViewModel : ObservableObject
     [ObservableProperty] SeriesCollection averagePricesCollection;
     [ObservableProperty] ObservableCollection<string> dateLabels;
 
-    public GraphicPageViewModel()
+    public GraphicPageViewModel(string graphicParameter)
     {
         Initialize();
+        _graphicParameter = graphicParameter;
     }
 
     async void Initialize()
@@ -103,6 +105,5 @@ public partial class GraphicPageViewModel : ObservableObject
             EndPriceDate = await SQLScripts.GetLastDate();
         }
     }
-
 
 }

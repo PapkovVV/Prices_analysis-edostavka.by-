@@ -37,7 +37,13 @@ public partial class WelcomeWindowViewModel : ObservableObject
     [RelayCommand]
     void GetAveragePricesGraphic()
     {
-        mainFrame.Navigate(new GraphicPage());
+        mainFrame.Navigate(new GraphicPage("Средние цены"));
+    }
+
+    [RelayCommand]
+    void GetProductPricesGraphic()
+    {
+        mainFrame.Navigate(new GraphicPage("Продукты"));
     }
 
     [RelayCommand]

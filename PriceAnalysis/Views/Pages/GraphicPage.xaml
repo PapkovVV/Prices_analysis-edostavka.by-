@@ -16,11 +16,16 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <StackPanel  HorizontalAlignment="Center" >
-            <TextBlock Text="График изменения средних цен по категории на выбранный промежуток времени" Margin="20" FontWeight="Bold" FontSize="15"/>
+            <TextBlock Text="График изменения цен продуктов на выбранный промежуток времени" HorizontalAlignment="Center" Margin="20" FontWeight="Bold" FontSize="15"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="Категория:"/>
                 <fc:ComboBoxPlus x:Name="categoriesCombo" MinWidth="200" VerticalContentAlignment="Center" 
-                                 HorizontalContentAlignment="Center" ItemsSource="{Binding UniqueCategories}" SelectedIndex="0" IsEditable="False" SelectedItem="{Binding SelectedCategory}"/>
+                                 HorizontalContentAlignment="Center" SelectionChanged="categoriesCombo_SelectionChanged"
+                                 SelectedIndex="0" IsEditable="False"/>
+                <Label Content="Продукт:"/>
+                <fc:ComboBoxPlus x:Name="productsCombo" MinWidth="200" VerticalContentAlignment="Center" 
+                                 HorizontalContentAlignment="Center" SelectedIndex="0" IsEditable="False" 
+                                 SelectedItem="{Binding SelectedCategory}"/>
                 <Label Content="Промежуток с"/>
                 <DatePicker HorizontalContentAlignment="Center" VerticalContentAlignment="Center" SelectedDate="{Binding StartPriceDate}" DisplayDateStart="{Binding MinDate}"/>
                 <Label Content="по"/>

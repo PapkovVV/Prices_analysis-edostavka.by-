@@ -31,6 +31,9 @@
                 <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Графики изменения средних цен" FontWeight="DemiBold"
                                  BackgroundOnHighlight="LightSkyBlue" BackgroundOnOpen="LightSkyBlue"
                                  HasDropShadow="True" Command="{Binding GetAveragePricesGraphicCommand}"/>
+                <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Графики изменения цен продуктов" FontWeight="DemiBold"
+                                 BackgroundOnHighlight="LightSkyBlue" BackgroundOnOpen="LightSkyBlue"
+                                 HasDropShadow="True" Command="{Binding GetProductPricesGraphicCommand}"/>
                 <fc:FlatMenuItem MinHeight="35" AlignWithOthers="True" Header="Справка" FontWeight="DemiBold"
                                  BackgroundOnHighlight="LightSkyBlue" BackgroundOnOpen="LightSkyBlue"
                                  HasDropShadow="True" Command="{Binding GetSpravkaCommand}"/>
