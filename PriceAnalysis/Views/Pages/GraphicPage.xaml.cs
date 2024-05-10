@@ -1,5 +1,7 @@
 ﻿using FullControls.Controls;
 using PriceAnalysis.DataBaseServices;
+using PriceAnalysis.Expansion_classes;
+using PriceAnalysis.Models;
 using PriceAnalysis.ViewModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,18 +21,18 @@ public partial class GraphicPage : Page
 
     async void Initialize()
     {
-        var uniqueCategories = (await SQLScripts.GetAllCategories()).Select(x => x.Name).ToList();
+        var uniqueCategories = await SQLScripts.GetAllCategories();
 
-        GenerateCategoriesComboBox(uniqueCategories);//Генерация КомбоБокса из категорий
+        GenerateCategoriesComboBoxAsync(uniqueCategories);//Генерация КомбоБокса из категорий
     }
 
-    private void GenerateCategoriesComboBox(IEnumerable<string> uniqueCategories)//Генерация комбобокса категорий продуктов(Оптимизировано)
+    private void GenerateCategoriesComboBoxAsync(IEnumerable<Category> uniqueCategories)//Генерация комбобокса категорий продуктов(Оптимизировано)
     {
         foreach (var category in uniqueCategories)
         {
             categoriesCombo.Items.Add(new ComboBoxItemPlus
             {
-                Content = category
+                Content = category.Name
             });
         }
     }
@@ -43,9 +45,10 @@ public partial class GraphicPage : Page
 
         foreach (var product in allProducts)
         {
-            productsCombo.Items.Add(new ComboBoxItemPlus
+            productsCombo.Items.Add(new ComboBoxItemPlusWithInfo
             {
-                Content = product.Name
+                Content = product.Name,
+                AdditionalInfo = product.Article
             });
         }
         productsCombo.SelectedIndex = 0;
