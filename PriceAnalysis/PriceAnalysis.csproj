@@ -27,6 +27,7 @@
     <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="DocX" Version="3.0.0" />
+    <PackageReference Include="EPPlus" Version="7.1.2" />
     <PackageReference Include="FullControls" Version="2.2.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.59" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />

@@ -44,7 +44,7 @@ public partial class DataPage : Page
     //Генерация комбобокса с временными разрезами(Оптимизировано)
     private async Task GenerateTimeLinesComboBox()
     {
-        string[] timeLines = { "День", "Неделя", "Месяц" };//Промежутки расчетов
+        string[] timeLines = { "День", "Месяц", "Год" };//Промежутки расчетов
 
         foreach (var timeLine in timeLines)
         {
@@ -111,7 +111,7 @@ public partial class DataPage : Page
                     PriceIndex? u = priceIndexes.FirstOrDefault(x => x.CategoryName.Equals(uniqueCategories.ElementAt(i)) &&
                         x.IndexDateFrom == priceInd.IndexDateFrom && x.IndexDateTo == priceInd.IndexDateTo);
 
-                    dataTable.Rows[i][header] = u?.IndexValue.ToString("0.00");
+                    dataTable.Rows[i][header] = u?.IndexValue != null ? u.IndexValue.ToString("0.00") : (object)DBNull.Value;
                 }
             }
 
