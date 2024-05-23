@@ -56,15 +56,23 @@ public class ExcelExport : BaseExportClass
             }
             else
             {
-                SetHeaderRow(worksheet, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
-                await SetRequiredAverageProductPrices(worksheet, columnHeaders);
+                if (timeline.Equals("День"))
+                {
+                    SetHeaderRow(worksheet, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
+                    await SetRequiredAverageProductPrices(worksheet, columnHeaders);
+                }
+                else if (timeline.Equals("Месяц"))
+                {
+                    SetHeaderRow(worksheet, "Используемые средние цены для подсчета индексов средних цен");//Устанавливаем заголовок дополнительной информации
+                    await SetRequireAveragePricesPricesByMonth(worksheet, columnHeaders);
+                }
             }
 
             worksheet.Columns().AdjustToContents();
 
             workbook.SaveAs(filePathExcel);
 
-            SetBarChart(filePathExcel);//Создание столбиковой диаграммы
+            SetBarChart(filePathExcel, name);//Создание столбиковой диаграммы
 
             try
             {
@@ -189,9 +197,10 @@ public class ExcelExport : BaseExportClass
         }
 
         int dataRow = row;
-        int counter = 1;
+        int counter = 0;
         foreach (var date in requiredDates)
         {
+            if (counter == 7) { dataRow = GetEmptyRow(worksheet) + 1; column = 1; }
             row = dataRow;
             SetCellValues(worksheet, true, date.ToShortDateString());
             foreach (var category in allCategories)
@@ -214,11 +223,13 @@ public class ExcelExport : BaseExportClass
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
         var allAveragePrices = await SQLScripts.GetAveragePricesAsync();//Получаем все средние цены
 
-        List<DateTime> requiredDates = new List<DateTime>();
+        HashSet<DateTime> requiredDates = new HashSet<DateTime>();
 
         foreach (var date in dates.TakeLast(dates.Count - 1))
         {
-            foreach (var reqDate in GetRequiredDates(timeline, date))
+            List<DateTime> reqDates = new List<DateTime>();
+
+            foreach (var reqDate in GetRequiredDates(timeline, date.Replace("Период: ", "").Split('-')))
             {
                 requiredDates.Add(reqDate);
             }
@@ -249,7 +260,7 @@ public class ExcelExport : BaseExportClass
         column = 1;
     }
 
-    private static void SetBarChart(string filePath)//Создание столбиковой диаграммы на основе необходимых данных
+    private static void SetBarChart(string filePath, string name)//Создание столбиковой диаграммы на основе необходимых данных
     {
         var excelFile = new FileInfo(filePath);
 
@@ -259,18 +270,35 @@ public class ExcelExport : BaseExportClass
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             var worksheet = package.Workbook.Worksheets["Sheet1"] ?? package.Workbook.Worksheets.Add("Sheet1");
-            // Проход по всем столбцам справа от начального столбца
 
-            int rowNum = 5; // Рядок для поиска
-            int startColumn = 2; // B это второй столбец
-            int lastNonEmptyColumn = GetEmptyCell(worksheet, startColumn, rowNum) - 1;
+            int datesRow = 0; // Строка с датами
+            int valuesRow = 0; //Начальная строка со значениями
+            int startColumn = 2; // Столбец для получения данных
+            int emptyCell = 0;
+            int emptyRow = 0;
+
+            if (name.Equals("AveragePrices"))
+            {
+                datesRow = 5;
+                valuesRow = 6;
+                emptyCell = GetEmptyCell(worksheet, startColumn, datesRow);
+                emptyRow = 5;
+            }
+            else
+            {
+                datesRow = 3;
+                valuesRow = 4;
+                emptyCell = GetEmptyCell(worksheet, startColumn, 30);
+                emptyRow = 16;
+            }
+
+            int lastNonEmptyColumn = GetEmptyCell(worksheet, startColumn, datesRow) - 1;
 
             if (lastNonEmptyColumn != -1)
             {
-                string lastNonEmptyCellAddress = worksheet.Cells[rowNum, lastNonEmptyColumn].Address;
-                string cellValue = worksheet.Cells[$"A{++rowNum}"].Text;
-                int emptyCell = GetEmptyCell(worksheet, startColumn, 5);
-                int emptyRow = 0;
+                string lastNonEmptyCellAddress = worksheet.Cells[datesRow, lastNonEmptyColumn].Address;
+                string cellValue = worksheet.Cells[$"A{valuesRow}"].Text;
+                
 
                 while (!string.IsNullOrEmpty(cellValue))
                 {
@@ -279,28 +307,44 @@ public class ExcelExport : BaseExportClass
                     chart.SetPosition(emptyRow, 0, emptyCell, 0); // Позиция диаграммы (row, rowOffsetPixels, column, columnOffsetPixels)
                     chart.SetSize(800, 600); // Размер диаграммы
 
-                    var series = chart.Series.Add(worksheet.Cells[$"B{rowNum}:{RemoveNonLetters(lastNonEmptyCellAddress)}{rowNum}"], worksheet.Cells[$"B5:{lastNonEmptyCellAddress}"]);
-                    series.Header = "Prices";
+                    var series = chart.Series.Add(worksheet.Cells[$"B{valuesRow}:{RemoveNonLetters(lastNonEmptyCellAddress)}{valuesRow}"], worksheet.Cells[$"B{datesRow}:{lastNonEmptyCellAddress}"]);
 
-                    cellValue = worksheet.Cells[$"A{++rowNum}"].Text;
 
-                    if (emptyRow == 0)
+                    cellValue = worksheet.Cells[$"A{++valuesRow}"].Text;
+
+                    if (name.Equals("AveragePrices"))
                     {
-                        emptyRow = 38;
+                        series.Header = "Средняя цена";
+
+                        if (emptyRow == 5)
+                        {
+                            emptyRow += 38;
+                        }
+                        else
+                        {
+                            emptyCell += 15;
+                            emptyRow -= 38;
+                        }
                     }
                     else
                     {
-                        emptyCell += 15;
-                        emptyRow -= 38;
+                        series.Header = "Индекс потребительских цен";
+
+                        if (emptyRow == 16)
+                        {
+                            emptyRow += 38;
+                        }
+                        else
+                        {
+                            emptyCell += 15;
+                            emptyRow -= 38;
+                        }
                     }
+                    
                 }
 
                 package.Save();
 
-            }
-            else
-            {
-                MessageBox.Show($"В строке {rowNum} нет непустых ячеек начиная с B5");
             }
         }
     }

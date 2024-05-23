@@ -83,7 +83,7 @@ public partial class DataPage : Page
         var distinctPriceIndexes = priceIndexes.Where(x => x.IndexDateFrom >= startDate && x.IndexDateTo <= lastDate)
                                     .GroupBy(pi => new { pi.IndexDateFrom, pi.IndexDateTo })
                                     .Select(group => group.First())
-                                    .ToList();
+                                    .TakeLast(7).ToList();
 
 
         if (distinctPriceIndexes != null && distinctPriceIndexes.Count > 0)
@@ -418,7 +418,7 @@ public partial class DataPage : Page
             }
             else
             {
-                header = $"Период: {GetMonth(dateFrom[1])} - {GetMonth(dateTo[1])}";
+                header = $"Период: {GetMonth(dateFrom[1])} {dateFrom[2]} - {GetMonth(dateTo[1])} {dateTo[2]}";
             }
         }
         else
