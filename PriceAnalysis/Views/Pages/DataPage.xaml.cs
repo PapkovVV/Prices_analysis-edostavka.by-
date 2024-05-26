@@ -3,6 +3,7 @@ using PriceAnalysis.DataBaseServices;
 using PriceAnalysis.Models;
 using PriceAnalysis.ViewModel;
 using System.Data;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -188,6 +189,10 @@ public partial class DataPage : Page
             {
                 averagePrices = GetMonthlyAveragePrices(averagePrices);
             }
+            else if (GetTimeLine().Equals("Год"))
+            {
+                averagePrices = GetAveragePricesByYear(averagePrices);
+            }
 
             if (averagePrices.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
             {
@@ -196,12 +201,34 @@ public partial class DataPage : Page
         }
         else
         {
-            List<PriceIndex> priceIndexes = dataList.Cast<PriceIndex>().ToList();
+            List<PriceIndex> priceIndexes = new List<PriceIndex>();
 
-            if (GetTimeLine().Equals("Месяц"))
+            if (GetTimeLine().Equals("День"))
+            {
+                priceIndexes = dataList.Cast<PriceIndex>().ToList();
+            }
+            else
             {
                 var allAveragePrices = await SQLScripts.GetAveragePricesAsync();
-                priceIndexes = GetMonthlyPriceIndexes(allAveragePrices);
+
+                if (GetTimeLine().Equals("Месяц"))
+                {
+                    priceIndexes = GetMonthlyPriceIndexes(allAveragePrices);
+                }
+                else
+                {
+                    int yearsCount = allAveragePrices.Select(x => x.AveragePriceDate.Year).Distinct().Count();
+
+                    if (yearsCount >= 2)
+                    {
+                        priceIndexes = GetPriceIndexesByYear(allAveragePrices);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Данных пока нет!");
+                        SetTimeLine("День");
+                    }
+                }
             }
 
             if (priceIndexes.Any(x => x.CategoryName.ToLower().StartsWith(categoriesCombo.Text.ToLower())))
@@ -353,15 +380,18 @@ public partial class DataPage : Page
             {
                 var averagePriceofAveragePrices = allAveragePrices.Where(x => x.CategoryId == categoryItem.CategoryId
                                                 && x.AveragePriceDate.Month == dateItem.Month && x.AveragePriceDate.Year == dateItem.Year)
-                                                    .Select(x => x.Average_Price).Average();//Получаем среднюю цену средних цен определенной категории за определенный месяц
+                                                    .Select(x => x.Average_Price).ToList();//Получаем все цены за определенный месяц определенной каегории
+
+                var multipliedValues = averagePriceofAveragePrices.Aggregate(1m, (acc, price) => acc * price);
+                var averagePriceOfMonth = Math.Pow((double)multipliedValues, 1.0 / averagePriceofAveragePrices.Count);
 
                 averagePricesByMonth.Add(new AveragePrice
                 {
                     CategoryId = categoryItem.CategoryId,
-                    AveragePriceDate = new DateTime(dateItem.Year, dateItem.Month, allAveragePrices.Where(x => x.AveragePriceDate.Month == dateItem.Month).
+                    AveragePriceDate = new DateTime(dateItem.Year, dateItem.Month, allAveragePrices.Where(x => x.AveragePriceDate.Month == dateItem.Month && x.AveragePriceDate.Year == dateItem.Year).
                                                      Select(x => x.AveragePriceDate).Distinct().Min().Day),
                     CategoryName = categoryItem.CategoryName,
-                    Average_Price = averagePriceofAveragePrices
+                    Average_Price = (decimal)averagePriceOfMonth
                 });
             }
         }
@@ -394,6 +424,64 @@ public partial class DataPage : Page
 
         return priceIndexesByMonth;
     }
+    private List<AveragePrice> GetAveragePricesByYear(List<AveragePrice> allAveragePrices)//Получение списка средних цен в разрезе года
+    {
+        List<AveragePrice> averagePricesByYear = new List<AveragePrice>();
+
+        var requiredCategoryIds = allAveragePrices.Select(x => new { CategoryId = x.CategoryId, CategoryName = x.CategoryName }).Distinct();//Получаем все Id имеющихся категорий
+        var allMonthsAndYears = allAveragePrices.Select(x => x.AveragePriceDate.Year ).Distinct();
+
+        foreach (var categoryItem in requiredCategoryIds)
+        {
+            foreach (var dateItem in allMonthsAndYears)
+            {
+                var averagePriceofAveragePrices = allAveragePrices.Where(x => x.CategoryId == categoryItem.CategoryId
+                                                                && x.AveragePriceDate.Year == dateItem)
+                                                                    .Select(x => x.Average_Price).ToList();//Получаем все цены за определенный месяц определенной каегории
+
+                var multipliedValues = averagePriceofAveragePrices.Aggregate(1.0, (acc, price) => acc * (double)price);
+                var averagePriceOfYear = Math.Pow((double)multipliedValues, 1.0 / averagePriceofAveragePrices.Count);
+
+                averagePricesByYear.Add(new AveragePrice
+                {
+                    CategoryId = categoryItem.CategoryId,
+                    AveragePriceDate = new DateTime(dateItem, allAveragePrices.Where(x => x.AveragePriceDate.Year == dateItem).
+                                                     Select(x => x.AveragePriceDate).Distinct().Min().Month, allAveragePrices.Where(x => x.AveragePriceDate.Year == dateItem).
+                                                     Select(x => x.AveragePriceDate).Distinct().Min().Day),
+                    CategoryName = categoryItem.CategoryName,
+                    Average_Price = (decimal)averagePriceOfYear
+                });
+            }
+        }
+
+        return averagePricesByYear;
+    }
+    private List<PriceIndex> GetPriceIndexesByYear(List<AveragePrice> allAveragePrices)//Получение списка индексов потребительских цен в разрезе года
+    {
+        List<PriceIndex> priceIndexesByYear = new List<PriceIndex>();
+
+        var requiredAveragePricesByYear = GetAveragePricesByYear(allAveragePrices);
+
+        var requiredCategoryIds = allAveragePrices.Select(x => new { CategoryId = x.CategoryId, CategoryName = x.CategoryName }).Distinct();//Получаем все Id и названия имеющихся категорий
+
+        foreach (var categoryItem in requiredCategoryIds)
+        {
+            var requiredCategoryPrices = requiredAveragePricesByYear.Where(x => x.CategoryId == categoryItem.CategoryId).OrderBy(x => x.AveragePriceDate);
+            for (int i = 0; i < requiredCategoryPrices.Count() - 1; i++)
+            {
+                priceIndexesByYear.Add(new PriceIndex
+                {
+                    CategoryId = categoryItem.CategoryId,
+                    CategoryName = categoryItem.CategoryName,
+                    IndexDateFrom = requiredCategoryPrices.ElementAt(i).AveragePriceDate,
+                    IndexDateTo = requiredCategoryPrices.ElementAt(i + 1).AveragePriceDate,
+                    IndexValue = (requiredCategoryPrices.ElementAt(i + 1).Average_Price/requiredCategoryPrices.ElementAt(i).Average_Price) * 100
+                });
+            }
+        }
+
+        return priceIndexesByYear;
+    }
     #endregion Фильтры
 
     #region Работа со строковыми данными
@@ -416,9 +504,13 @@ public partial class DataPage : Page
                 header = $"Период: {dateFrom[0]} {GetMonth(dateFrom[1])} {dateFrom[2]} -\n" +
                         $"{dateTo[0]} {GetMonth(dateTo[1])} {dateTo[2]}";
             }
-            else
+            else if (GetTimeLine().Equals("Месяц"))
             {
                 header = $"Период: {GetMonth(dateFrom[1])} {dateFrom[2]} - {GetMonth(dateTo[1])} {dateTo[2]}";
+            }
+            else
+            {
+                header = $"Период: {dateFrom[2]} - {dateTo[2]}";
             }
         }
         else
@@ -428,9 +520,13 @@ public partial class DataPage : Page
             {
                 header = $"{dateMass[0]} {GetMonth(dateMass[1])} {dateMass[2]}";
             }
-            else
+            else if(GetTimeLine().Equals("Месяц"))
             {
                 header = $"{GetMonth(dateMass[1])} {dateMass[2]}";
+            }
+            else
+            {
+                header = $"{dateMass[2]}";
             }
         }
         return header;
@@ -482,6 +578,22 @@ public partial class DataPage : Page
     }
 
     #endregion Работа со стрококвыми данными
+
+    #region Установка значения
+
+    private void SetTimeLine(string timeLine)//Установка значения для ComboBox разрезов времени(OP)
+    {
+        foreach (ComboBoxItemPlus item in timelineCombo.Items)
+        {
+            if (item.Content.Equals(timeLine))
+            {
+                timelineCombo.SelectedItem = item;
+                break;
+            }
+        }
+    }
+
+    #endregion
 
     #region События
 
