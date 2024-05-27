@@ -1,14 +1,19 @@
 ﻿using PriceAnalysis.Models;
 using PriceAnalysis.Services.LogServices;
+using PriceAnalysis.Services.ServerServices;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Windows;
 
 namespace PriceAnalysis.DataBaseServices;
 
 public static class SQLScripts
 {
-    static string connectionString = @$"Server=DESKTOP-SJLIHQ6;Trusted_Connection=True;Encrypt=False;";
+    private static string connectionString
+    {
+        get { return GetConnectionString();}
+    }
     static string sqlScript = "";
 
     #region Создание
@@ -714,6 +719,29 @@ public static class SQLScripts
         catch (Exception ex)
         {
             await LogFile.AddLogMessageAsync("ExecuteSQLScriptNonQueryAsync", ex.Message, null, true);
+        }
+    }
+
+    private static string GetConnectionString()//Создание строки подключения(ОР)
+    {
+         return @$"Server={ServerFile.GetServerName()};Trusted_Connection=True;Encrypt=False;";
+    }
+
+    public static bool IsConnectionValid(out string message)//Проверка правильности строки подключения(ОР)
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                message = "Подключение установлено успешно!";
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Не удалось установить подключение: {ex.Message}";
+            return false;
         }
     }
 }

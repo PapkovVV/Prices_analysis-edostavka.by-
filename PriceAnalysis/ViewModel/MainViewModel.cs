@@ -7,7 +7,9 @@ using PriceAnalysis.Services.DataBaseServices;
 using PriceAnalysis.Services.LogServices;
 using PriceAnalysis.Services.ParsingServices;
 using PriceAnalysis.Services.SecurityServices;
+using PriceAnalysis.Services.ServerServices;
 using PriceAnalysis.Views;
+using PriceAnalysis.Views.Windows;
 using System.Windows;
 namespace PriceAnalysis.ViewModel;
 
@@ -38,10 +40,16 @@ public partial class MainViewModel : ObservableObject
             IsAuthButtonEnable = false;
             IsProgressBarVisible = true;
 
+            if (ServerFile.IsEmptyServerFile())
+            {
+                GetServerNameWindow serverNameWindow = new GetServerNameWindow();
+                serverNameWindow.ShowDialog();
+            }
+
             await LogFile.Create();//Создание Log-файла
             await LogFile.ClearLogFile();//Очистка Log при наступлении нового месяца
             await SQLScripts.CreateDatabaseAsync();//Выполнение операций с БД
-            await UpdateValues();//Выполнение парсинга и обновление БД, при 
+            await UpdateValues();//Выполнение парсинга и обновление БД
         }
         finally
         {
