@@ -15,6 +15,9 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Window.Resources>
     <Grid>
+        <TextBlock HorizontalAlignment="Right" Margin="5">
+            <Hyperlink Command="{Binding ChangeServerNameCommand}" FontSize="11" TextDecorations="None">Изменить имя сервера</Hyperlink>
+        </TextBlock>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Border BorderBrush="Black" BorderThickness="1" Background="#E6E6FA" Padding="20 30 20 20" CornerRadius="10">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -35,7 +38,7 @@
                 </StackPanel>
             </Border>
         </StackPanel>
-        
+
         <StackPanel Visibility="{Binding IsProgressBarVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
                     HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="400" Margin="105">
             <RichTextBox x:Name="richTextBox" VerticalScrollBarVisibility="Hidden" IsReadOnly="True" Background="Transparent" Height="44" BorderThickness="0" TextChanged="richTextBox_TextChanged" Cursor="Arrow">

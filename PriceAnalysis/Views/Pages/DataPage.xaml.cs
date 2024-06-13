@@ -1,4 +1,5 @@
 ﻿using FullControls.Controls;
+using Nethereum.Util;
 using PriceAnalysis.DataBaseServices;
 using PriceAnalysis.Models;
 using PriceAnalysis.ViewModel;
@@ -382,7 +383,10 @@ public partial class DataPage : Page
                                                 && x.AveragePriceDate.Month == dateItem.Month && x.AveragePriceDate.Year == dateItem.Year)
                                                     .Select(x => x.Average_Price).ToList();//Получаем все цены за определенный месяц определенной каегории
 
-                var multipliedValues = averagePriceofAveragePrices.Aggregate(1m, (acc, price) => acc * price);
+                BigDecimal multipliedValues = averagePriceofAveragePrices
+                                .Select(price => new BigDecimal(price))
+                                .Aggregate(new BigDecimal(1), (acc, price) => acc * price);
+
                 var averagePriceOfMonth = Math.Pow((double)multipliedValues, 1.0 / averagePriceofAveragePrices.Count);
 
                 averagePricesByMonth.Add(new AveragePrice

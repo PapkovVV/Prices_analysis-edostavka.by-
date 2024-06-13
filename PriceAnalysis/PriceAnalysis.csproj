@@ -31,6 +31,7 @@
     <PackageReference Include="FullControls" Version="2.2.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.59" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+    <PackageReference Include="Nethereum.Util" Version="4.20.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 

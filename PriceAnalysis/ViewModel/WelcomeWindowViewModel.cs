@@ -51,7 +51,7 @@ public partial class WelcomeWindowViewModel : ObservableObject
     {
         string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         string? projectPath = System.IO.Path.GetDirectoryName(assemblyPath);
-        string filePath = System.IO.Path.Combine(projectPath, "СправкаКПП.pdf");
+        string filePath = System.IO.Path.Combine($"\"{projectPath}\"", "СправкаКПП.pdf");
         try
         {
             Process.Start("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe", filePath);

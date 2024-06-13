@@ -30,6 +30,15 @@ public class ExcelExport : BaseExportClass
         //Основная информация
         List<string> columnHeaders = GetHeaderNames(dataGrid);//Получаем названия 
         List<string> cellValues = GetCellValues(dataGrid);//Получаем основные данные
+        List<string> selectedCategories = new List<string>();//Получаем выбранные категории
+
+        foreach (string cellValue in cellValues)
+        {
+            if (cellValue.Any(char.IsLetter) && !cellValue.Equals("end"))
+            {
+                selectedCategories.Add(cellValue);
+            }
+        }
 
         using (var workbook = new XLWorkbook())
         {
@@ -46,7 +55,7 @@ public class ExcelExport : BaseExportClass
                 {
                     column = 2;
                     SetHeaderRow(worksheet, "Используемые продукты для подсчета средних цен");//Устанавливаем заголовок дополнительной информации
-                    await SetRequiredProductPrices(worksheet, columnHeaders);
+                    await SetRequiredProductPrices(worksheet, columnHeaders, selectedCategories);
                 }
                 else if(timeline.Equals("Месяц"))
                 {
@@ -150,7 +159,7 @@ public class ExcelExport : BaseExportClass
         }
         row++;
     }
-    private static async Task SetRequiredProductPrices(IXLWorksheet worksheet, List<string> dates)//Дополнительная информация о продуктах для средних цен(Оптимизировано)
+    private static async Task SetRequiredProductPrices(IXLWorksheet worksheet, List<string> dates, List<string> selectedCategories)//Дополнительная информация о продуктах для средних цен(Оптимизировано)
     {
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
@@ -158,7 +167,7 @@ public class ExcelExport : BaseExportClass
 
         var requiredDates = GetRequiredDates(timeline, dates.TakeLast(dates.Count - 1).ToArray());//Получаем необходимые даты
 
-        foreach (var category in allCategories)
+        foreach (var category in allCategories.Where(category => selectedCategories.Contains(category.Name)))
         {
             SetHeaderRow(worksheet, category.Name);//Установка названия категории
             SetCellValues(worksheet, true, dates.TakeLast(dates.Count - 1).ToArray());

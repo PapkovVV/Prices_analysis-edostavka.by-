@@ -42,8 +42,16 @@ public partial class MainViewModel : ObservableObject
 
             if (ServerFile.IsEmptyServerFile())
             {
-                GetServerNameWindow serverNameWindow = new GetServerNameWindow();
+                GetServerNameWindow serverNameWindow = new GetServerNameWindow(false);
                 serverNameWindow.ShowDialog();
+            }
+            else
+            {
+                if (!SQLScripts.IsConnectionValid())
+                {
+                    GetServerNameWindow serverNameWindow = new GetServerNameWindow(false);
+                    serverNameWindow.ShowDialog();
+                }
             }
 
             await LogFile.Create();//Создание Log-файла
@@ -146,6 +154,12 @@ public partial class MainViewModel : ObservableObject
 
     }
 
+    [RelayCommand]
+    private void ChangeServerName()
+    {
+        GetServerNameWindow getServerNameWindow = new GetServerNameWindow(true);
+        getServerNameWindow.Show();
+    }
     void SetContents(string login, string password, string title, string buttonContent, string hyperlinkText)//Установка значений текста в интерфейсе(OP)
     {
         Login = login;

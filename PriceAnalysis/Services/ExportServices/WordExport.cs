@@ -45,12 +45,22 @@ public class WordExport : BaseExportClass
             }
         }
 
+        List<string> selectedCategories = new List<string>();//Получаем выбранные категории
+
+        foreach (string cellValue in cellValues)
+        {
+            if (cellValue.Any(char.IsLetter) && !cellValue.Equals("end"))
+            {
+                selectedCategories.Add(cellValue);
+            }
+        }
+
         using (var doc = DocX.Create(filePathWord))
         {
             CreateDataTable(doc, filePathWord, dataGrid, columnHeaders, title, cellValues);
             if (name.Equals("AveragePrices"))
             {
-                await SetRequiredProductPricesAsync(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен");
+                await SetRequiredProductPricesAsync(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен", selectedCategories);
             }
             else
             {
@@ -96,7 +106,7 @@ public class WordExport : BaseExportClass
     }
 
     //Создание таблицы дополнительной информации средних цен
-    private static async Task SetRequiredProductPricesAsync(DocX doc, List<string> dates, string title)
+    private static async Task SetRequiredProductPricesAsync(DocX doc, List<string> dates, string title, List<string> selectedCategories)
     {
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
         var allProducts = await SQLScripts.GetAllProducts();//Получаем все продукты
@@ -108,7 +118,7 @@ public class WordExport : BaseExportClass
         doc.InsertParagraph(title).FontSize(13).Font("Times New Roman").Alignment = Alignment.center;
         doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
 
-        foreach (var category in allCategories)
+        foreach (var category in allCategories.Where(category => selectedCategories.Contains(category.Name)))
         {
             doc.InsertParagraph(category.Name).FontSize(13).Bold().Font("Times New Roman").Alignment = Alignment.center;
             var requiredProducts = allProducts.Where(x => x.CategoryId == category.Id);

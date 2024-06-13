@@ -9,10 +9,10 @@ namespace PriceAnalysis.Views.Windows;
 /// </summary>
 public partial class GetServerNameWindow : FlexWindow
 {
-    public GetServerNameWindow()
+    public GetServerNameWindow(bool isChanging)
     {
         InitializeComponent();
-        DataContext = new GetServerNamWindowViewModel();
+        DataContext = new GetServerNamWindowViewModel(isChanging);
         if (DataContext is GetServerNamWindowViewModel viewModel)
         {
             viewModel.CloseWindow += () => this.Close();

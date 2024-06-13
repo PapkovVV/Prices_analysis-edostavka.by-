@@ -10,7 +10,12 @@ public partial class GetServerNamWindowViewModel : ObservableObject
 {
     [ObservableProperty] string serverName = null!;
     public event Action CloseWindow;
+    private bool _isChanging = false;
 
+    public GetServerNamWindowViewModel(bool isChanging)
+    {
+        _isChanging = isChanging;
+    }
     [RelayCommand]
     private void SaveServerName()
     {
@@ -40,6 +45,13 @@ public partial class GetServerNamWindowViewModel : ObservableObject
     [RelayCommand]
     private void CloseApplication()
     {
-        Application.Current.Shutdown();
+        if (_isChanging)
+        {
+            CloseWindow?.Invoke();
+        }
+        else
+        {
+            Application.Current.Shutdown();
+        }
     }
 }

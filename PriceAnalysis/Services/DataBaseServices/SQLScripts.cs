@@ -98,30 +98,33 @@ public static class SQLScripts
     }
     public static async Task<int> AddCategories(int id, string categoryName)//Добавление категории в БД(OP)
     {
-        try
+        if (!categoryName.Equals("Неизвестно"))
         {
-            using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
+            try
             {
-                using (SqlCommand command = new SqlCommand("AddCategoryProcedure", connection))
+                using (SqlConnection connection = new SqlConnection(connectionString + "Database=PriceAnalysis;"))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
+                    using (SqlCommand command = new SqlCommand("AddCategoryProcedure", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
-                    command.Parameters.Add(new SqlParameter("@CategoryName", SqlDbType.NVarChar, -1) { Value = categoryName });
+                        command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+                        command.Parameters.Add(new SqlParameter("@CategoryName", SqlDbType.NVarChar, -1) { Value = categoryName });
 
-                    SqlParameter paramResult = new SqlParameter("@Result", SqlDbType.Int) { Direction =  ParameterDirection.Output };
-                    command.Parameters.Add(paramResult);
+                        SqlParameter paramResult = new SqlParameter("@Result", SqlDbType.Int) { Direction =  ParameterDirection.Output };
+                        command.Parameters.Add(paramResult);
 
-                    await connection.OpenAsync();
-                    await command.ExecuteNonQueryAsync();
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
 
-                    return (int)paramResult.Value;
+                        return (int)paramResult.Value;
+                    }
                 }
             }
-        }
-        catch (SqlException ex)
-        {
-            await LogFile.AddLogMessageAsync("AddCategories", ex.Message, null, true);
+            catch (SqlException ex)
+            {
+                await LogFile.AddLogMessageAsync("AddCategories", ex.Message, null, true);
+            }
         }
         return 0;
     }
@@ -741,6 +744,22 @@ public static class SQLScripts
         catch (Exception ex)
         {
             message = $"Не удалось установить подключение: {ex.Message}";
+            return false;
+        }
+    }
+
+    public static bool IsConnectionValid()
+    {
+        try
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                return true;
+            }
+        }
+        catch
+        {
             return false;
         }
     }
