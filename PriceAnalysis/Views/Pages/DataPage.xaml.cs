@@ -34,6 +34,8 @@ public partial class DataPage : Page
 
     async void Initialize()
     {
+        lastPrice = null;
+        startPrice = null;
         await GenerateCategoriesComboBox();
         await GenerateTimeLinesComboBox();
 

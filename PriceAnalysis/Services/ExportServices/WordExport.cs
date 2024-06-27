@@ -1,8 +1,5 @@
-﻿using ClosedXML.Excel;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using DocumentFormat.OpenXml.ExtendedProperties;
+﻿using Nethereum.Util;
 using PriceAnalysis.DataBaseServices;
-using PriceAnalysis.Models;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -58,14 +55,30 @@ public class WordExport : BaseExportClass
         using (var doc = DocX.Create(filePathWord))
         {
             CreateDataTable(doc, filePathWord, dataGrid, columnHeaders, title, cellValues);
-            if (name.Equals("AveragePrices"))
+            if (timeline.Equals("День"))
             {
-                await SetRequiredProductPricesAsync(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен", selectedCategories);
+                if (name.Equals("AveragePrices"))
+                {
+                    await SetRequiredProductPricesAsync(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен", selectedCategories);
+                }
+                else
+                {
+                    await SetRequiredAverageProductPrices(doc, columnHeaders, "Информация о средних ценах, используемых для расчета индексов потребительских цен");
+                }
             }
-            else
+            else if (timeline.Equals("Месяц"))
             {
-                await SetRequiredAverageProductPrices(doc, columnHeaders, "Информация о средних ценах, используемых для расчета индексов потребительских цен");
+                if (name.Equals("AveragePrices"))
+                {
+                    //await SetRequiredAveragePricesByMonth(doc, columnHeaders, "Информация о продуктах, используемых для расчета средних цен", selectedCategories);
+                }
+                else
+                {
+                    await SetRequiredAveragePricesByMonth(doc, columnHeaders, "Информация о средних ценах, используемых для расчета индексов потребительских цен", selectedCategories);
+                }
             }
+
+
             try
             {
                 doc.Save();
@@ -152,7 +165,7 @@ public class WordExport : BaseExportClass
         }
     }
 
-    //Создание таблицы дополнительной информации индексов потребительских цен()
+    //Создание таблицы дополнительной информации индексов потребительских цен
     private static async Task SetRequiredAverageProductPrices(DocX doc, List<string> dates, string title)
     {
         var allCategories = await SQLScripts.GetAllCategories();//Получаем все категории
@@ -176,7 +189,7 @@ public class WordExport : BaseExportClass
         foreach (var date in requiredDates)
         {
             var table = doc.AddTable(1, 2);
-            table.Rows[0].MergeCells(0,1);
+            table.Rows[0].MergeCells(0, 1);
             table.Rows[0].Cells[0].Paragraphs.First().Append(date.ToShortDateString()).Font("Times New Roman").FontSize(9).Bold().Alignment = Alignment.center;
 
             foreach (var category in allCategories)
@@ -186,6 +199,58 @@ public class WordExport : BaseExportClass
                 string requiredCategory = category.Name.ToString();//Категория
                 decimal requiredAveragePrice = allAveragePrices.
                                                FirstOrDefault(x => x.CategoryId == category.Id && x.AveragePriceDate.Equals(date))!.Average_Price;//Средняя цена
+
+                newRow.Cells[0].Paragraphs.First().Append(requiredCategory).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
+                newRow.Cells[1].Paragraphs.First().Append(requiredAveragePrice.ToString("0.00")).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
+            }
+            doc.InsertTable(table);
+            doc.InsertParagraph();
+            doc.InsertParagraph();
+        }
+    }
+
+    private static async Task SetRequiredAveragePricesByMonth(DocX doc, List<string> dates, string title, List<string> selectedCategories)
+    {
+        var allCategories = (await SQLScripts.GetAllCategories()).Where(category => selectedCategories.Contains(category.Name)).ToList();//Получаем все категории
+        var allAveragePrices = await SQLScripts.GetAveragePricesAsync();//Получаем все средние цены
+
+        HashSet<DateTime> requiredDates = new HashSet<DateTime>();
+
+        foreach (var date in dates.TakeLast(dates.Count - 1))
+        {
+            List<DateTime> reqDates = new List<DateTime>();
+
+            foreach (var reqDate in GetRequiredDates(timeline, date.Replace("Период: ", "").Split('-')))
+            {
+                requiredDates.Add(reqDate);
+            }
+        }
+
+        doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
+        doc.InsertParagraph(title).FontSize(13).Font("Times New Roman").Alignment = Alignment.center;
+        doc.InsertParagraph().SpacingAfter(10); // Вставляем пустую строку
+
+        foreach (var date in requiredDates)
+        {
+            var table = doc.AddTable(1, 2);
+            table.Rows[0].MergeCells(0, 1);
+            table.Rows[0].Cells[0].Paragraphs.First().Append(date.ToString("MMMM yyyy")).Font("Times New Roman").FontSize(9).Bold().Alignment = Alignment.center;
+
+            foreach (var category in allCategories)
+            {
+                var newRow = table.InsertRow();
+
+                string requiredCategory = category.Name.ToString();//Категория
+                var averagePriceofAveragePrices = allAveragePrices.Where(x => x.CategoryId == category.Id
+                                                && x.AveragePriceDate.Month == date.Month && x.AveragePriceDate.Year == date.Year)
+                                                    .Select(x => x.Average_Price).ToList();//Получаем все цены за определенный месяц определенной каегории
+
+                BigDecimal multipliedValues = averagePriceofAveragePrices
+                                .Select(price => new BigDecimal(price))
+                                .Aggregate(new BigDecimal(1), (acc, price) => acc * price);
+
+
+                var requiredAveragePrice = Math.Pow((double)multipliedValues, 1.0 / averagePriceofAveragePrices.Count);//Средняя цена
 
                 newRow.Cells[0].Paragraphs.First().Append(requiredCategory).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;
                 newRow.Cells[1].Paragraphs.First().Append(requiredAveragePrice.ToString("0.00")).FontSize(9).Font("Times New Roman").Alignment = Alignment.center;

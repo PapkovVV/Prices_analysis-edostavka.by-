@@ -60,7 +60,9 @@ public partial class ProductsPage : Page
     {
         var accordionItemsCollection = accordion.Items;//Получаем коллкцию элементов 
 
-        foreach (var category in uniqueCategories.OrderBy(x => x.Id))
+        var requiredCategories = string.IsNullOrEmpty(categoriesCombo.Text) ? uniqueCategories : uniqueCategories.Where(x => x.Name.StartsWith(categoriesCombo.Text));
+
+        foreach (var category in requiredCategories.OrderBy(x => x.Id))
         {
             var catItem = new SimpleAccordionItem
             {
